@@ -22,13 +22,10 @@ if (!document.querySelector("#css3")) {
     input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.5}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
     @keyframes toast{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
     @keyframes fabPop{from{opacity:0;transform:scale(.85) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
-    @keyframes bgPulse{0%,100%{opacity:1}50%{opacity:.7}}
     .fu{animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both}
     .glass{background:rgba(255,255,255,0.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12)}
-    .glass-mid{background:rgba(255,255,255,0.09);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.14)}
     .tx-row:active{background:rgba(255,255,255,0.1)!important}
     .btn-press:active{transform:scale(.96)}
     @media(min-width:768px){#root>div{max-width:430px!important;margin:0 auto!important;box-shadow:0 0 80px rgba(0,0,0,0.6)}}
@@ -36,28 +33,12 @@ if (!document.querySelector("#css3")) {
   document.head.appendChild(s);
 }
 
-/* ── Constants ── */
 const LIMIT = 200_000;
-const mKey = (offset = 0) => {
-  const d = new Date();
-  d.setMonth(d.getMonth() - offset);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-};
-const monthLabel = (offset = 0) => {
-  const d = new Date();
-  d.setMonth(d.getMonth() - offset);
-  return `${d.getFullYear()}년 ${d.getMonth()+1}월`;
-};
-const todayMD = () => {
-  const d = new Date();
-  return `${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`;
-};
-const todayFull = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-};
+const mKey = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+const monthLabel = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}년 ${d.getMonth()+1}월`; };
+const todayMD = () => { const d=new Date(); return `${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`; };
+const pctColor = p => p>=90?"#F87171":p>=70?"#FCD34D":"#4A9EFF";
 
-/* ── Supabase storage ── */
 const S = {
   get: async k => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch { return null; } },
   set: async (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} },
@@ -78,7 +59,6 @@ const GS = {
   update: async tx => { await supabase.from("transactions").update({ amount:tx.amount, merchant:tx.merchant, date:tx.date }).eq("id",tx.id); },
 };
 
-/* ── Image compress ── */
 const compress = (url,px=900) => new Promise(res => {
   const img=new Image(); img.onload=()=>{
     const sc=Math.min(1,px/Math.max(img.width,img.height));
@@ -87,7 +67,6 @@ const compress = (url,px=900) => new Promise(res => {
   }; img.src=url;
 });
 
-/* ── OCR ── */
 async function ocr(b64, mt) {
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages",{
@@ -113,7 +92,6 @@ async function ocr(b64, mt) {
   } catch { return {amount:null,merchant:"알 수 없음",date:null}; }
 }
 
-/* ── Excel export ── */
 function exportXlsx(txns, projectName) {
   const wb=XLSX.utils.book_new(); const ws={};
   const sc=(addr,v)=>{ ws[addr]={v,t:typeof v==="number"?"n":"s"}; };
@@ -141,64 +119,25 @@ function exportXlsx(txns, projectName) {
   XLSX.writeFile(wb,`${d.getMonth()+1}월_지출결의서_${proj||"식대"}.xlsx`);
 }
 
-/* ── Color helpers ── */
-const pctColor = p => p>=90?"#F87171":p>=70?"#FCD34D":"#4A9EFF";
-
-/* ══ CHARACTER ══ */
-const FlowerMascot = ({ size=100 }) => (
-  <div style={{display:"inline-block",animation:"float 3.5s ease-in-out infinite",width:size,height:size,position:"relative"}}>
-    <div style={{position:"absolute",top:-size*.08,left:-size*.15,width:size*.32,height:size*.32,borderRadius:"50%",background:"radial-gradient(circle,rgba(74,158,255,.9) 0%,rgba(74,158,255,.3) 50%,transparent 75%)",filter:`blur(${size*.04}px)`,animation:"float 2.8s ease-in-out infinite",animationDelay:".4s"}}/>
-    <div style={{position:"absolute",top:size*.3,right:-size*.18,width:size*.26,height:size*.26,borderRadius:"50%",background:"radial-gradient(circle,rgba(100,180,255,.85) 0%,rgba(74,158,255,.25) 55%,transparent 75%)",filter:`blur(${size*.035}px)`,animation:"float 3.2s ease-in-out infinite",animationDelay:"1s"}}/>
-    <div style={{position:"absolute",bottom:size*.02,left:-size*.1,width:size*.2,height:size*.2,borderRadius:"50%",background:"radial-gradient(circle,rgba(45,212,191,.7) 0%,rgba(74,158,255,.2) 55%,transparent 75%)",filter:`blur(${size*.03}px)`,animation:"float 3.8s ease-in-out infinite",animationDelay:".8s"}}/>
-    <svg width={size} height={size} viewBox="0 0 200 200" fill="none">
-      <defs>
-        <radialGradient id="mb1" cx="32%" cy="25%" r="72%">
-          <stop offset="0%" stopColor="#A8D8FF"/>
-          <stop offset="38%" stopColor="#5AAFF8"/>
-          <stop offset="100%" stopColor="#2A82E0"/>
-        </radialGradient>
-        <radialGradient id="mg1" cx="38%" cy="28%" r="55%" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fff" stopOpacity=".82"/>
-          <stop offset="50%" stopColor="#fff" stopOpacity=".18"/>
-          <stop offset="100%" stopColor="#fff" stopOpacity="0"/>
-        </radialGradient>
-        <clipPath id="mc1"><path d="M100,38 C126,32 152,46 162,68 C174,94 168,124 148,142 C128,160 98,168 74,158 C50,148 32,124 30,98 C28,72 42,46 62,38 C74,32 88,36 100,38Z"/></clipPath>
-      </defs>
-      <ellipse cx="100" cy="108" rx="62" ry="56" fill="rgba(74,158,255,.18)"/>
-      <path d="M100,38 C126,32 152,46 162,68 C174,94 168,124 148,142 C128,160 98,168 74,158 C50,148 32,124 30,98 C28,72 42,46 62,38 C74,32 88,36 100,38Z" fill="url(#mb1)"/>
-      <g clipPath="url(#mc1)">
-        <ellipse cx="82" cy="68" rx="28" ry="18" fill="url(#mg1)" transform="rotate(-22 82 68)"/>
-        <ellipse cx="96" cy="52" rx="12" ry="6" fill="white" opacity=".62" transform="rotate(-16 96 52)"/>
-      </g>
-      <circle cx="86" cy="104" r="4.2" fill="#1A3A80" opacity=".65"/>
-      <circle cx="84.6" cy="102.6" r="1.6" fill="white" opacity=".7"/>
-      <circle cx="114" cy="104" r="4.2" fill="#1A3A80" opacity=".65"/>
-      <circle cx="112.6" cy="102.6" r="1.6" fill="white" opacity=".7"/>
-      <path d="M88 114 Q100 122 112 114" stroke="#1A3A80" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity=".65"/>
-      <circle cx="76" cy="112" r="7" fill="#F9A8D4" opacity=".28"/>
-      <circle cx="124" cy="112" r="7" fill="#F9A8D4" opacity=".28"/>
-    </svg>
-  </div>
+/* ── Tab Icons (SVG) ── */
+const IconHome = ({active}) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+    <path d="M9 21V12h6v9"/>
+  </svg>
 );
-
-const FlowerMascotSm = ({ size=60 }) => (
-  <div style={{display:"inline-block",animation:"float 3.5s ease-in-out infinite",animationDelay:".5s",width:size,height:size,position:"relative"}}>
-    <div style={{position:"absolute",top:-size*.1,left:-size*.18,width:size*.3,height:size*.3,borderRadius:"50%",background:"radial-gradient(circle,rgba(74,158,255,.8) 0%,transparent 70%)",filter:`blur(${size*.05}px)`}}/>
-    <div style={{position:"absolute",top:size*.3,right:-size*.15,width:size*.25,height:size*.25,borderRadius:"50%",background:"radial-gradient(circle,rgba(45,212,191,.7) 0%,transparent 70%)",filter:`blur(${size*.04}px)`}}/>
-    <svg width={size} height={size} viewBox="0 0 200 200" fill="none">
-      <defs>
-        <radialGradient id="sb1" cx="32%" cy="25%" r="72%">
-          <stop offset="0%" stopColor="#A8D8FF"/>
-          <stop offset="100%" stopColor="#2A82E0"/>
-        </radialGradient>
-      </defs>
-      <path d="M100,42 C122,36 148,50 158,72 C168,96 162,122 144,140 C126,158 98,164 76,154 C54,144 38,120 38,96 C38,72 52,48 72,42 C82,36 92,40 100,42Z" fill="url(#sb1)"/>
-      <ellipse cx="84" cy="66" rx="22" ry="14" fill="white" opacity=".38" transform="rotate(-20 84 66)"/>
-      <circle cx="88" cy="100" r="3.5" fill="#1A3A80" opacity=".6"/>
-      <circle cx="112" cy="100" r="3.5" fill="#1A3A80" opacity=".6"/>
-      <path d="M90 110 Q100 117 110 110" stroke="#1A3A80" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity=".6"/>
-    </svg>
-  </div>
+const IconGallery = ({active}) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <path d="M21 15l-5-5L5 21"/>
+  </svg>
+);
+const IconSettings = ({active}) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+  </svg>
 );
 
 /* ── UI Primitives ── */
@@ -245,8 +184,8 @@ const SHead = ({children}) => (
   <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:10}}>{children}</div>
 );
 
-/* ── TxRow with edit ── */
-function TxRow({tx,hasRec,onDl,onDel,onSave,delay=0}) {
+/* ── TxRow (✎ 아이콘 없이, 탭으로 수정 접근 불가 → 홈에서만 표시) ── */
+function TxRow({tx,onDel,onSave,delay=0}) {
   const [editing,setEditing]=useState(false);
   const [amt,setAmt]=useState(String(tx.amount));
   const [merch,setMerch]=useState(tx.merchant);
@@ -266,8 +205,9 @@ function TxRow({tx,hasRec,onDl,onDel,onSave,delay=0}) {
   );
 
   return (
-    <div className="tx-row fu glass" style={{display:"flex",alignItems:"center",gap:12,
-      padding:"13px 14px",borderRadius:18,marginBottom:8,transition:"background .15s",animationDelay:`${delay}s`}}>
+    <div className="tx-row fu glass" onClick={()=>setEditing(true)} style={{display:"flex",alignItems:"center",gap:12,
+      padding:"13px 14px",borderRadius:18,marginBottom:8,transition:"background .15s",
+      animationDelay:`${delay}s`,cursor:"pointer"}}>
       <div style={{width:40,height:40,borderRadius:14,flexShrink:0,
         background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.25)",
         display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🍽</div>
@@ -275,33 +215,35 @@ function TxRow({tx,hasRec,onDl,onDel,onSave,delay=0}) {
         <div style={{fontSize:14,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
         <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{tx.date}</div>
       </div>
-      {hasRec&&<button onClick={onDl} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:"rgba(255,255,255,.4)"}}>↓</button>}
-      <button onClick={()=>setEditing(true)} style={{background:"none",border:"none",cursor:"pointer",fontSize:13,color:"rgba(255,255,255,.4)",fontFamily:"inherit"}}>✎</button>
       <div style={{fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>−{tx.amount.toLocaleString()}원</div>
-      <button onClick={onDel} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"rgba(255,255,255,.2)",lineHeight:1,marginLeft:2}}>×</button>
+      <button onClick={e=>{e.stopPropagation();onDel();}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"rgba(255,255,255,.2)",lineHeight:1,marginLeft:2}}>×</button>
     </div>
   );
 }
 
 /* ── Tab Bar ── */
-const TabBar = ({tab,setTab}) => {
-  const tabs=[{id:"home",label:"홈"},{id:"gallery",label:"갤러리"},{id:"settings",label:"설정"}];
-  const icons = {home:"⌂",gallery:"⊞",settings:"⊙"};
-  return (
-    <div className="glass" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-      width:"100%",maxWidth:430,display:"flex",zIndex:100,
-      paddingBottom:"env(safe-area-inset-bottom,8px)",borderRadius:"24px 24px 0 0",borderBottom:"none"}}>
-      {tabs.map(t=>(
-        <button key={t.id} className="btn-press" onClick={()=>setTab(t.id)} style={{
-          flex:1,background:"none",border:"none",cursor:"pointer",
-          padding:"12px 0 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-          <span style={{fontSize:20,color:tab===t.id?"#4A9EFF":"rgba(255,255,255,.3)",transition:"color .2s"}}>{icons[t.id]}</span>
-          <span style={{fontSize:10,fontWeight:tab===t.id?700:400,color:tab===t.id?"#4A9EFF":"rgba(255,255,255,.3)",transition:"color .2s"}}>{t.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
+const TabBar = ({tab,setTab}) => (
+  <div className="glass" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
+    width:"100%",maxWidth:430,display:"flex",zIndex:100,
+    paddingBottom:"env(safe-area-inset-bottom,8px)",borderRadius:"24px 24px 0 0",borderBottom:"none"}}>
+    {[
+      {id:"home",label:"홈",Icon:IconHome},
+      {id:"gallery",label:"갤러리",Icon:IconGallery},
+      {id:"settings",label:"설정",Icon:IconSettings},
+    ].map(({id,label,Icon})=>(
+      <button key={id} className="btn-press" onClick={()=>setTab(id)} style={{
+        flex:1,background:"none",border:"none",cursor:"pointer",
+        padding:"12px 0 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+        position:"relative"}}>
+        {tab===id&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",
+          width:32,height:3,borderRadius:"0 0 3px 3px",background:"#4A9EFF"}}/>}
+        <Icon active={tab===id}/>
+        <span style={{fontSize:10,fontWeight:tab===id?700:400,
+          color:tab===id?"#4A9EFF":"rgba(255,255,255,.35)",transition:"color .2s"}}>{label}</span>
+      </button>
+    ))}
+  </div>
+);
 
 /* ══ MAIN APP ══ */
 export default function App() {
@@ -317,7 +259,7 @@ export default function App() {
   const [toast,setToast]=useState(null);
   const [notified,setNtf]=useState(false);
   const [user,setUser]=useState(null);
-  const [galleryFilter,setGalleryFilter]=useState(0); // 0=이번달, 1=지난달, 2=2달전
+  const [galleryFilter,setGalleryFilter]=useState(0);
   const camRef=useRef(); const galRef=useRef();
 
   useEffect(()=>{
@@ -335,23 +277,15 @@ export default function App() {
   },[]);
 
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
-
-  // Filter txns by selected month
-  const filterKey = mKey(galleryFilter);
-  const filterLabel = monthLabel(galleryFilter);
-  const filteredTxns = txns.filter(tx => {
+  const filterLabel=monthLabel(galleryFilter);
+  const filteredTxns=txns.filter(tx=>{
     if(!tx.date) return galleryFilter===0;
-    const [mm] = tx.date.split("/");
-    const d = new Date();
-    d.setMonth(d.getMonth()-galleryFilter);
+    const [mm]=tx.date.split("/");
+    const d=new Date(); d.setMonth(d.getMonth()-galleryFilter);
     return parseInt(mm)===d.getMonth()+1;
   });
-
-  const used=txns.filter(tx=>{
-    if(!tx.date) return true;
-    const [mm]=tx.date.split("/");
-    return parseInt(mm)===new Date().getMonth()+1;
-  }).reduce((s,t)=>s+t.amount,0);
+  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;});
+  const used=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
   const remaining=LIMIT-used;
   const pct=Math.min(100,(used/LIMIT)*100);
   const pc=pctColor(pct);
@@ -409,7 +343,6 @@ export default function App() {
     for(const id of ids){dlRec(parseInt(id));await new Promise(r=>setTimeout(r,350));}
   };
 
-  /* BG */
   const bgStyle={
     minHeight:"100vh",
     background:"linear-gradient(160deg,#0d0d14 0%,#111827 50%,#0d1f3a 100%)",
@@ -420,31 +353,87 @@ export default function App() {
   /* ── LOGIN ── */
   if(!user) return (
     <div style={{...bgStyle,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",paddingBottom:0}}>
-      <div style={{position:"absolute",top:"15%",left:"50%",transform:"translateX(-50%)"}}>
-        <FlowerMascot size={120}/>
-      </div>
-      <div style={{textAlign:"center",marginTop:180}}>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",marginBottom:6}}>ExpenseFlow</div>
-        <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:48}}>법인카드 식대를 스마트하게</div>
+      <div style={{textAlign:"center",padding:"0 32px"}}>
+        {/* 3D 글래스 카드 아이콘 */}
+        <div style={{width:100,height:100,margin:"0 auto 28px",position:"relative",animation:"float 3.5s ease-in-out infinite"}}>
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <radialGradient id="cg1" cx="35%" cy="25%" r="70%">
+                <stop offset="0%" stopColor="#A8E0FF"/>
+                <stop offset="50%" stopColor="#5BB8F5"/>
+                <stop offset="100%" stopColor="#2A8EE0"/>
+              </radialGradient>
+              <radialGradient id="cg2" cx="30%" cy="20%" r="60%">
+                <stop offset="0%" stopColor="white" stopOpacity=".9"/>
+                <stop offset="60%" stopColor="white" stopOpacity=".2"/>
+                <stop offset="100%" stopColor="white" stopOpacity="0"/>
+              </radialGradient>
+              <linearGradient id="cg3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#7DD4FC"/>
+                <stop offset="100%" stopColor="#1E7FD8"/>
+              </linearGradient>
+              <filter id="cf1" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#2A8EE0" floodOpacity=".45"/>
+              </filter>
+            </defs>
+            {/* 카드 본체 — 살짝 기울어진 사각형 */}
+            <g transform="rotate(-12 50 50)" filter="url(#cf1)">
+              <rect x="10" y="22" width="80" height="52" rx="10" fill="url(#cg1)"/>
+              {/* 글로시 하이라이트 */}
+              <ellipse cx="36" cy="34" rx="22" ry="10" fill="url(#cg2)" transform="rotate(-8 36 34)"/>
+              <rect x="10" y="22" width="80" height="52" rx="10"
+                fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="1.2"/>
+              {/* 칩 */}
+              <rect x="18" y="32" width="16" height="12" rx="3" fill="#E8C96A" opacity=".95"/>
+              <rect x="21" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
+              <rect x="25" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
+              <rect x="29" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
+              <rect x="18" y="36" width="16" height="1.5" fill="#C8A84A" opacity=".6"/>
+              <rect x="18" y="40" width="16" height="1.5" fill="#C8A84A" opacity=".6"/>
+              {/* 카드번호 점선 */}
+              {[0,1,2,3].map(g=>(
+                <g key={g}>
+                  {[0,1,2,3].map(d=>(
+                    <circle key={d} cx={18+g*16+d*3.2} cy={54} r="1.2" fill="white" opacity=".7"/>
+                  ))}
+                </g>
+              ))}
+              {/* 마스터카드 로고 */}
+              <circle cx="70" cy="62" r="7" fill="#FF6B6B" opacity=".8"/>
+              <circle cx="78" cy="62" r="7" fill="#FFB347" opacity=".8"/>
+            </g>
+            {/* 상단 반사광 */}
+            <ellipse cx="46" cy="28" rx="18" ry="6" fill="white" opacity=".18" transform="rotate(-12 46 28)"/>
+          </svg>
+        </div>
+  
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",marginBottom:8}}>ExpenseFlow</div>
+        {/* 2. 서브타이틀 변경 */}
+        <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:48}}>식대 사용 현황</div>
+        {/* 3. 버튼 텍스트 변경 */}
         <button className="btn-press" onClick={()=>supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}})} style={{
           display:"flex",alignItems:"center",gap:12,background:"#fff",color:"#1a1a2e",border:"none",
           borderRadius:18,padding:"15px 32px",fontSize:15,fontWeight:700,cursor:"pointer",
           boxShadow:"0 8px 32px rgba(0,0,0,.3)",margin:"0 auto",fontFamily:"inherit"
         }}>
-          <span style={{fontSize:20}}>🔑</span> Google로 시작하기
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Google 로그인
         </button>
       </div>
     </div>
   );
 
   /* ── OVERLAY ── */
-  const renderOverlay = () => (
+  const renderOverlay=()=>(
     <div style={{position:"fixed",inset:0,background:"linear-gradient(160deg,#0d0d14,#111827,#0d1f3a)",
       zIndex:200,maxWidth:430,margin:"0 auto",overflowY:"auto"}}>
-      {/* Header */}
       <div style={{padding:"52px 20px 16px",display:"flex",alignItems:"center",gap:12,
-        background:"linear-gradient(to bottom,rgba(13,13,20,.95),transparent)",
-        backdropFilter:"blur(12px)"}}>
+        background:"linear-gradient(to bottom,rgba(13,13,20,.95),transparent)",backdropFilter:"blur(12px)"}}>
         <button onClick={closeOv} className="btn-press" style={{
           width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.06)",
           border:"1px solid rgba(255,255,255,.12)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
@@ -454,10 +443,10 @@ export default function App() {
       </div>
 
       {overlay==="loading"&&(
-        <div style={{textAlign:"center",paddingTop:40,paddingBottom:20,padding:"40px 24px"}}>
+        <div style={{textAlign:"center",padding:"60px 24px"}}>
           {preview&&<img src={preview} alt="" style={{width:"100%",maxHeight:220,objectFit:"cover",borderRadius:20,marginBottom:28,opacity:.6}}/>}
-          <FlowerMascot size={80}/>
-          <div style={{marginTop:16,color:"rgba(255,255,255,.6)",fontSize:14}}>영수증 읽는 중...</div>
+          <div style={{fontSize:40,marginBottom:16}}>✨</div>
+          <div style={{color:"rgba(255,255,255,.6)",fontSize:14}}>영수증 읽는 중...</div>
         </div>
       )}
 
@@ -491,40 +480,33 @@ export default function App() {
   );
 
   /* ── HOME ── */
-  const renderHome = () => (
+  const renderHome=()=>(
     <div style={{position:"relative",zIndex:1}}>
-      {/* Header */}
-      <div style={{padding:"52px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>{monthLabel()} 식대</div>
-          <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>ExpenseFlow</div>
+      {/* 3. 헤더: 년월 텍스트 → ExpenseFlow 위, 동일 좌측 정렬 */}
+      <div style={{padding:"52px 20px 0"}}>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>
+          {monthLabel()} 식대
         </div>
+        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>ExpenseFlow</div>
       </div>
 
-      {/* Hero balance card */}
+      {/* Hero balance */}
       <div style={{padding:"16px 20px 0"}}>
-        <div className="glass" style={{borderRadius:24,padding:"20px 22px",
+        <div className="glass" style={{borderRadius:24,padding:"24px",
           background:"linear-gradient(135deg,rgba(74,158,255,.1) 0%,rgba(45,212,191,.07) 100%)",
           border:"1px solid rgba(74,158,255,.2)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:8}}>남은 잔액</div>
-              <div style={{fontSize:44,fontWeight:900,letterSpacing:"-2px",color:pc,lineHeight:1}}>
-                {remaining.toLocaleString()}<span style={{fontSize:18,marginLeft:4,fontWeight:600}}>원</span>
-              </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8}}>{used.toLocaleString()}원 사용 · 한도 200,000원</div>
-            </div>
-            <FlowerMascot size={90}/>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:8}}>남은 잔액</div>
+          <div style={{fontSize:52,fontWeight:900,letterSpacing:"-2px",color:pc,lineHeight:1,marginBottom:4}}>
+            {remaining.toLocaleString()}<span style={{fontSize:20,marginLeft:4,fontWeight:600}}>원</span>
           </div>
-          <div style={{marginTop:16}}>
-            <div style={{background:"rgba(255,255,255,.08)",borderRadius:99,height:6,overflow:"hidden"}}>
-              <div style={{width:`${pct}%`,height:"100%",borderRadius:99,
-                background:`linear-gradient(90deg,${pc},#2DD4BF)`,
-                boxShadow:`0 0 12px ${pc}66`,transition:"width .8s ease"}}/>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:11,color:"rgba(255,255,255,.3)"}}>
-              <span>0원</span><span>200,000원</span>
-            </div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:16}}>{used.toLocaleString()}원 사용 · 한도 200,000원</div>
+          <div style={{background:"rgba(255,255,255,.08)",borderRadius:99,height:6,overflow:"hidden"}}>
+            <div style={{width:`${pct}%`,height:"100%",borderRadius:99,
+              background:`linear-gradient(90deg,${pc},#2DD4BF)`,
+              boxShadow:`0 0 12px ${pc}66`,transition:"width .8s ease"}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:11,color:"rgba(255,255,255,.3)"}}>
+            <span>0원</span><span>200,000원</span>
           </div>
         </div>
       </div>
@@ -532,8 +514,8 @@ export default function App() {
       {/* Stats */}
       <div style={{display:"flex",gap:8,padding:"10px 20px 0"}}>
         {[
-          {l:"사용 건수",v:`${txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).length}건`},
-          {l:"평균 1회",v:used&&txns.length?`${Math.round(used/txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).length).toLocaleString()}원`:"-"},
+          {l:"사용 건수",v:`${thisMonthTxns.length}건`},
+          {l:"평균 1회",v:thisMonthTxns.length?`${Math.round(used/thisMonthTxns.length).toLocaleString()}원`:"-"},
           {l:"잔여율",v:`${Math.round(100-pct)}%`},
         ].map(s=>(
           <div key={s.l} className="glass" style={{flex:1,borderRadius:16,padding:"13px 8px",textAlign:"center"}}>
@@ -543,34 +525,27 @@ export default function App() {
         ))}
       </div>
 
-      {/* Excel btn */}
-      {txns.length>0&&(
-        <div style={{padding:"10px 20px 0"}}>
-          <button className="btn-press glass" onClick={()=>exportXlsx(txns,cfg.projectName)} style={{
-            width:"100%",borderRadius:14,padding:"12px",fontSize:13,fontWeight:600,color:"rgba(255,255,255,.8)",
-            cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"transform .15s"}}>
-            <span>📊</span><span>지출결의서 엑셀 다운로드</span>
-          </button>
-        </div>
-      )}
+      {/* 2. 엑셀 버튼 삭제 — 설정에만 */}
 
       {/* Tx list */}
       <div style={{padding:"16px 20px 0"}}>
         <SHead>이번 달 내역</SHead>
-        {txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).length===0&&(
+        {thisMonthTxns.length===0&&(
           <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.5)"}}>
-            <FlowerMascotSm size={56}/>
-            <div style={{fontSize:14,fontWeight:600,marginTop:12}}>아직 기록이 없어요</div>
+            <div style={{fontSize:40,marginBottom:12}}>🍽</div>
+            <div style={{fontSize:14,fontWeight:600}}>아직 기록이 없어요</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:6}}>우측 하단 + 버튼으로 추가해봐요</div>
           </div>
         )}
-        {txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;})
-          .slice(0,5).map((tx,i)=>(
-          <TxRow key={tx.id} tx={tx} hasRec={!!recs[tx.id]} onDl={()=>dlRec(tx.id)} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.05}/>
+        {thisMonthTxns.slice(0,5).map((tx,i)=>(
+          <TxRow key={tx.id} tx={tx} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.05}/>
         ))}
-        {txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).length>5&&(
-          <button onClick={()=>setTab("gallery")} style={{width:"100%",background:"none",border:"none",color:"rgba(255,255,255,.4)",fontSize:13,cursor:"pointer",padding:"10px",fontFamily:"inherit"}}>
-            더보기 →
+        {/* 1. 더보기 텍스트 변경 */}
+        {thisMonthTxns.length>5&&(
+          <button onClick={()=>setTab("gallery")} style={{
+            width:"100%",background:"none",border:"none",color:"rgba(255,255,255,.4)",
+            fontSize:13,cursor:"pointer",padding:"12px",fontFamily:"inherit",fontWeight:600}}>
+            +더보기
           </button>
         )}
       </div>
@@ -578,16 +553,15 @@ export default function App() {
   );
 
   /* ── GALLERY ── */
-  const renderGallery = () => (
+  const renderGallery=()=>(
     <div style={{padding:"52px 20px 0",position:"relative",zIndex:1}}>
-      {/* Header */}
       <div style={{marginBottom:16}}>
         <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>영수증 보관함</div>
         <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>갤러리</div>
       </div>
 
       {/* Month filter */}
-      <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
         {[{label:"이번 달",offset:0},{label:"지난 달",offset:1},{label:"2달 전",offset:2}].map(f=>(
           <button key={f.offset} className="btn-press" onClick={()=>setGalleryFilter(f.offset)} style={{
             padding:"8px 16px",borderRadius:99,whiteSpace:"nowrap",fontSize:12,fontWeight:600,cursor:"pointer",
@@ -604,22 +578,14 @@ export default function App() {
 
       {/* Month summary */}
       <div className="glass" style={{borderRadius:20,padding:"16px 18px",marginBottom:16,
-        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
-        border:"1px solid rgba(74,158,255,.2)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:4}}>{filterLabel} 합계</div>
-            <div style={{fontSize:26,fontWeight:800,letterSpacing:"-1px"}}>
-              {filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}원
-            </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:3}}>{filteredTxns.length}건</div>
-          </div>
-          <FlowerMascotSm size={56}/>
-        </div>
+        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",border:"1px solid rgba(74,158,255,.2)"}}>
+        <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:4}}>{filterLabel} 합계</div>
+        <div style={{fontSize:26,fontWeight:800,letterSpacing:"-1px"}}>{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}원</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:3}}>{filteredTxns.length}건</div>
       </div>
 
-      {/* Receipt image grid */}
-      {Object.keys(recs).length>0&&(
+      {/* 5/7. 이미지 그리드만 — 리스트 없음, X버튼 + 다운로드 버튼 */}
+      {filteredTxns.filter(t=>recs[t.id]).length>0?(
         <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
             <SHead>영수증 이미지</SHead>
@@ -627,11 +593,18 @@ export default function App() {
               전체 다운로드 ↓
             </button>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-            {txns.filter(t=>recs[t.id]).map(tx=>(
-              <div key={tx.id} className="glass" onClick={()=>dlRec(tx.id)} style={{borderRadius:18,overflow:"hidden",cursor:"pointer"}}>
-                <img src={recs[tx.id]} alt="" style={{width:"100%",height:110,objectFit:"cover",display:"block"}}/>
-                <div style={{padding:"9px 11px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {filteredTxns.filter(t=>recs[t.id]).map(tx=>(
+              <div key={tx.id} className="glass" style={{borderRadius:18,overflow:"hidden",position:"relative"}}>
+                <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
+                  style={{width:"100%",height:150,objectFit:"cover",display:"block",cursor:"pointer"}}/>
+                {/* X 삭제 버튼 */}
+                <button onClick={()=>delTxn(tx.id)} style={{
+                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
+                  background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",
+                  border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:15,cursor:"pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+                <div style={{padding:"9px 12px"}}>
                   <div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
                   <div style={{fontSize:12,color:"#4A9EFF",fontWeight:700,marginTop:2}}>{tx.amount.toLocaleString()}원</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tx.date}</div>
@@ -640,30 +613,26 @@ export default function App() {
             ))}
           </div>
         </>
+      ):(
+        <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>
+          <div style={{fontSize:36,marginBottom:12}}>🖼</div>
+          저장된 영수증 이미지가 없어요
+        </div>
       )}
-
-      {/* Full tx list for selected month */}
-      <SHead>내역</SHead>
-      {filteredTxns.length===0&&<div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>기록이 없어요</div>}
-      {filteredTxns.map((tx,i)=>(
-        <TxRow key={tx.id} tx={tx} hasRec={!!recs[tx.id]} onDl={()=>dlRec(tx.id)} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.04}/>
-      ))}
     </div>
   );
 
   /* ── SETTINGS ── */
-  const renderSettings = () => (
+  const renderSettings=()=>(
     <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
-      <div style={{textAlign:"center",marginBottom:20}}><FlowerMascotSm size={64}/></div>
-      <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",textAlign:"center",marginBottom:24}}>설정</div>
+      <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:24}}>설정</div>
 
-      {/* Account info */}
       <div className="glass" style={{borderRadius:20,padding:"16px 18px",marginBottom:6,
         background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",border:"1px solid rgba(74,158,255,.2)"}}>
         <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:4,letterSpacing:".5px"}}>로그인 계정</div>
         <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>{user?.email}</div>
       </div>
-      <div style={{marginBottom:20}}>
+      <div style={{marginBottom:24}}>
         <PBtn secondary small onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}}>로그아웃</PBtn>
       </div>
 
@@ -702,9 +671,11 @@ export default function App() {
     </div>
   );
 
+  /* ── FAB 위치: 컨테이너 기준 우측 20px ── */
+  const fabRight = `max(20px, calc((100vw - 430px) / 2 + 20px))`;
+
   return (
     <div style={bgStyle}>
-      {/* Ambient blobs */}
       <div style={{position:"absolute",top:-60,right:-40,width:240,height:240,borderRadius:"50%",background:"rgba(74,158,255,.08)",filter:"blur(60px)",pointerEvents:"none",zIndex:0}}/>
       <div style={{position:"absolute",top:"40%",left:-60,width:200,height:200,borderRadius:"50%",background:"rgba(45,212,191,.06)",filter:"blur(50px)",pointerEvents:"none",zIndex:0}}/>
 
@@ -716,11 +687,11 @@ export default function App() {
       {!overlay&&tab==="gallery"&&renderGallery()}
       {!overlay&&tab==="settings"&&renderSettings()}
 
-      {/* FAB - bottom right */}
+      {/* 8. FAB — 컨테이너 안에 고정 */}
       {!overlay&&tab!=="settings"&&(
         <>
           {fabOpen&&(
-            <div style={{position:"fixed",bottom:150,right:20,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end",zIndex:60}}>
+            <div style={{position:"fixed",bottom:150,right:fabRight,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end",zIndex:60}}>
               {[
                 {icon:"📷",label:"카메라로 찍기",fn:()=>camRef.current?.click()},
                 {icon:"🖼",label:"갤러리에서 불러오기",fn:()=>galRef.current?.click()},
@@ -738,7 +709,7 @@ export default function App() {
               ))}
             </div>
           )}
-          <div style={{position:"fixed",bottom:90,right:20,zIndex:80}}>
+          <div style={{position:"fixed",bottom:90,right:fabRight,zIndex:80}}>
             <button className="btn-press" onClick={()=>setFab(p=>!p)} style={{
               width:56,height:56,borderRadius:"50%",
               background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",
