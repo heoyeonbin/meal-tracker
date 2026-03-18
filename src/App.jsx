@@ -68,7 +68,7 @@ async function ocr(b64, mt) {
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514", max_tokens: 200,
+        model: "claude-haiku-4-5-20251001", max_tokens: 200,
         system: `Receipt parser. Return ONLY valid JSON: {"amount":number_or_null,"merchant":"string","date":"MM/DD"}. amount=total KRW integer. merchant=Korean store name or "알 수 없음". date=MM/DD or null.`,
         messages: [{ role: "user", content: [
           { type: "image", source: { type: "base64", media_type: mt, data: b64 } },
