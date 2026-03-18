@@ -484,7 +484,7 @@ export default function App() {
   const renderHome=()=>(
     <div style={{position:"relative",zIndex:1,width:"100%",overflowX:"hidden"}}>
       {/* 헤더 - 좌측 정렬 */}
-      <div style={{padding:"52px 20px 0"}}>
+      <div style={{padding:"52px 20px 0",textAlign:"left"}}>
         <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>
           {monthLabel()} 식대
         </div>
@@ -597,9 +597,9 @@ export default function App() {
   const renderGallery=()=>(
     <div style={{padding:"52px 20px 0",position:"relative",zIndex:1}}>
       <div style={{marginBottom:16}}>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>영수증 보관함</div>
-        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>갤러리</div>
-      </div>
+       <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>영수증 보관함</div>
+       <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>갤러리</div>
+</div>
 
       {/* Month filter */}
       <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -656,7 +656,6 @@ export default function App() {
         </>
       ):(
         <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>
-          <div style={{fontSize:36,marginBottom:12}}>🖼</div>
           저장된 영수증 이미지가 없어요
         </div>
       )}
@@ -664,132 +663,142 @@ export default function App() {
   );
 
   /* ── SETTINGS ── */
-  const renderSettings=()=>{  
-    const SettingRow=({icon,label,value,color,destructive,onClick,last})=>(
-      <button onClick={onClick} style={{
-        width:"100%",display:"flex",alignItems:"center",gap:14,
-        padding:"14px 16px",background:"none",border:"none",cursor:"pointer",
-        borderBottom:last?"none":"1px solid rgba(255,255,255,.06)",
-        transition:"background .15s",fontFamily:"inherit"}}
-        onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.04)"}
-        onMouseLeave={e=>e.currentTarget.style.background="none"}>
-        <div style={{width:36,height:36,borderRadius:12,flexShrink:0,
-          display:"flex",alignItems:"center",justifyContent:"center",
-          background:`${color}18`,border:`1px solid ${color}30`}}>
-          {icon}
-        </div>
-        <div style={{flex:1,textAlign:"left"}}>
-          <div style={{fontSize:14,fontWeight:500,color:destructive?"#F87171":"#fff"}}>{label}</div>
-          {value&&<div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>{value}</div>}
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke={destructive?"#F87171":"rgba(255,255,255,.25)"} strokeWidth="2">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      </button>
-    );
+  const renderSettings=()=>(
+    <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
+      <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:20,textAlign:"left"}}>설정</div>
   
-    return (
-      <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
-        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:24}}>설정</div>
-  
-        {/* WORKSPACE */}
-        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>WORKSPACE</div>
-        <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20l-6-4z"/></svg>}
-            label="프로젝트명"
-            value={cfg.projectName||"미설정"}
-            color="#4A9EFF"
-            onClick={()=>setOpenSection(openSection==="project"?null:"project")}/>
-          {openSection==="project"&&(
-            <div style={{padding:"0 16px 16px"}}>
-              <GlassInput value={cfg.projectName} onChange={v=>setCfg(c=>({...c,projectName:v}))} placeholder="예: 2025 마케팅팀" hint="엑셀 지출결의서에 자동 입력"/>
-              <PBtn small onClick={()=>{S.set("cfg",cfg);ping("저장됐어요");}}>저장</PBtn>
-            </div>
-          )}
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7B9EFF" strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>}
-            label="테마"
-            value="다크 모드"
-            color="#7B9EFF"
-            last
-            onClick={()=>ping("현재 다크 모드만 지원해요")}/>
-        </div>
-  
-        {/* NOTIFICATIONS */}
-        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>NOTIFICATIONS</div>
-        <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>}
-            label="잔액 알림"
-            value={cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}
-            color="#2DD4BF"
-            onClick={()=>setOpenSection(openSection==="alert"?null:"alert")}/>
-          {openSection==="alert"&&(
-            <div style={{padding:"0 16px 16px"}}>
-              <GlassInput label="알림 이메일" value={cfg.email} onChange={v=>setCfg(c=>({...c,email:v}))} placeholder="me@company.com"/>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8}}>알림 기준 잔액</div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
-                {[30000,50000,70000,100000].map(v=>(
-                  <button key={v} className="btn-press" onClick={()=>setCfg(c=>({...c,threshold:v}))} style={{
-                    padding:"7px 12px",borderRadius:99,fontFamily:"inherit",cursor:"pointer",
-                    border:`1.5px solid ${cfg.threshold===v?"rgba(74,158,255,.8)":"rgba(255,255,255,.12)"}`,
-                    background:cfg.threshold===v?"rgba(74,158,255,.2)":"rgba(255,255,255,.05)",
-                    color:cfg.threshold===v?"#4A9EFF":"rgba(255,255,255,.5)",
-                    fontSize:11,fontWeight:cfg.threshold===v?700:400}}>
-                    {v.toLocaleString()}원
-                  </button>
-                ))}
-              </div>
-              <PBtn small onClick={()=>{S.set("cfg",cfg);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
-            </div>
-          )}
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
-            label="개인정보 보호"
-            value="보호됨"
-            color="#4A9EFF"
-            last
-            onClick={()=>ping("데이터는 안전하게 보호돼요")}/>
-        </div>
-  
-        {/* DATA */}
-        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>DATA</div>
-        <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>}
-            label="엑셀 지출결의서 다운로드"
-            value=""
-            color="#2DD4BF"
-            last
-            onClick={()=>exportXlsx(txns,cfg.projectName)}/>
-        </div>
-  
-        {/* ACCOUNT */}
-        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>ACCOUNT</div>
-        <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-            label="계정 정보"
-            value={user?.email}
-            color="#4A9EFF"
-            onClick={()=>ping(user?.email||"")}/>
-          <SettingRow
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>}
-            label="로그아웃"
-            color="#F87171"
-            destructive
-            last
-            onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}}/>
-        </div>
-  
-        <div style={{textAlign:"center",marginTop:8}}>
-          <p style={{color:"rgba(255,255,255,.2)",fontSize:11}}>ExpenseFlow v1.0.0 · © 2026</p>
+      {/* 프로필 카드 */}
+      <div className="glass" style={{borderRadius:24,padding:"20px",marginBottom:24,
+        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
+        border:"1px solid rgba(74,158,255,.2)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <div style={{width:56,height:56,borderRadius:18,flexShrink:0,
+            background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            boxShadow:"0 4px 16px rgba(74,158,255,.4)"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{user?.email?.split("@")[0]}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{user?.email}</div>
+          </div>
         </div>
       </div>
-    );
-  };
+  
+      {/* WORKSPACE */}
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>WORKSPACE</div>
+      <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
+        {/* 프로젝트명 */}
+        <button onClick={()=>setOpenSection(openSection==="project"?null:"project")} style={{
+          width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
+          background:"none",border:"none",cursor:"pointer",
+          borderBottom:openSection==="project"?"1px solid rgba(255,255,255,.06)":"none",fontFamily:"inherit"}}>
+          <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.25)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" strokeWidth="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20l-6-4z"/>
+            </svg>
+          </div>
+          <div style={{flex:1,textAlign:"left"}}>
+            <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>프로젝트명</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>{cfg.projectName||"미설정"}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        {openSection==="project"&&(
+          <div style={{padding:"12px 16px 16px"}}>
+            <GlassInput value={cfg.projectName} onChange={v=>setCfg(c=>({...c,projectName:v}))} placeholder="예: 2025 마케팅팀" hint="엑셀 지출결의서에 자동 입력"/>
+            <PBtn small onClick={()=>{S.set("cfg",cfg);ping("저장됐어요");}}>저장</PBtn>
+          </div>
+        )}
+      </div>
+  
+      {/* NOTIFICATIONS */}
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>NOTIFICATIONS</div>
+      <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
+        <button onClick={()=>setOpenSection(openSection==="alert"?null:"alert")} style={{
+          width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
+          background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
+          <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(45,212,191,.15)",border:"1px solid rgba(45,212,191,.25)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+          </div>
+          <div style={{flex:1,textAlign:"left"}}>
+            <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>잔액 알림</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>{cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        {openSection==="alert"&&(
+          <div style={{padding:"12px 16px 16px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+            <GlassInput label="알림 이메일" value={cfg.email} onChange={v=>setCfg(c=>({...c,email:v}))} placeholder="me@company.com"/>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8}}>알림 기준 잔액</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+              {[30000,50000,70000,100000].map(v=>(
+                <button key={v} className="btn-press" onClick={()=>setCfg(c=>({...c,threshold:v}))} style={{
+                  padding:"7px 12px",borderRadius:99,fontFamily:"inherit",cursor:"pointer",
+                  border:`1.5px solid ${cfg.threshold===v?"rgba(74,158,255,.8)":"rgba(255,255,255,.12)"}`,
+                  background:cfg.threshold===v?"rgba(74,158,255,.2)":"rgba(255,255,255,.05)",
+                  color:cfg.threshold===v?"#4A9EFF":"rgba(255,255,255,.5)",
+                  fontSize:11,fontWeight:cfg.threshold===v?700:400}}>
+                  {v.toLocaleString()}원
+                </button>
+              ))}
+            </div>
+            <PBtn small onClick={()=>{S.set("cfg",cfg);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
+          </div>
+        )}
+      </div>
+  
+      {/* DATA */}
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>DATA</div>
+      <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
+        <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={{
+          width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
+          background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
+          <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(45,212,191,.15)",border:"1px solid rgba(45,212,191,.25)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <div style={{flex:1,textAlign:"left"}}>
+            <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>엑셀 지출결의서 다운로드</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+  
+      {/* ACCOUNT */}
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>ACCOUNT</div>
+      <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
+        <button onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}} style={{
+          width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
+          background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
+          <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(248,113,113,.15)",border:"1px solid rgba(248,113,113,.25)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
+          </div>
+          <div style={{flex:1,textAlign:"left"}}>
+            <div style={{fontSize:14,fontWeight:500,color:"#F87171"}}>로그아웃</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+  
+      <div style={{textAlign:"center",marginTop:8}}>
+        <p style={{color:"rgba(255,255,255,.2)",fontSize:11}}>ExpenseFlow v1.0.0 · © 2026</p>
+      </div>
+    </div>
+  );
 
   /* ── FAB 위치: 컨테이너 기준 우측 20px ── */
   const fabRight = `max(20px, calc((100vw - 430px) / 2 + 20px))`;
