@@ -260,6 +260,7 @@ export default function App() {
   const [notified,setNtf]=useState(false);
   const [user,setUser]=useState(null);
   const [galleryFilter,setGalleryFilter]=useState(0);
+  const [openSection,setOpenSection]=useState(null);
   const camRef=useRef(); const galRef=useRef();
 
   useEffect(()=>{
@@ -591,46 +592,6 @@ export default function App() {
       </div>
     </div>
   );
-      {/* Stats */}
-      <div style={{display:"flex",gap:8,padding:"10px 20px 0"}}>
-        {[
-          {l:"사용 건수",v:`${thisMonthTxns.length}건`},
-          {l:"평균 1회",v:thisMonthTxns.length?`${Math.round(used/thisMonthTxns.length).toLocaleString()}원`:"-"},
-          {l:"잔여율",v:`${Math.round(100-pct)}%`},
-        ].map(s=>(
-          <div key={s.l} className="glass" style={{flex:1,borderRadius:16,padding:"13px 8px",textAlign:"center"}}>
-            <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{s.v}</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:3}}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* 2. 엑셀 버튼 삭제 — 설정에만 */}
-
-      {/* Tx list */}
-      <div style={{padding:"16px 20px 0"}}>
-        <SHead>이번 달 내역</SHead>
-        {thisMonthTxns.length===0&&(
-          <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.5)"}}>
-            <div style={{fontSize:40,marginBottom:12}}>🍽</div>
-            <div style={{fontSize:14,fontWeight:600}}>아직 기록이 없어요</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:6}}>우측 하단 + 버튼으로 추가해봐요</div>
-          </div>
-        )}
-        {thisMonthTxns.slice(0,5).map((tx,i)=>(
-          <TxRow key={tx.id} tx={tx} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.05}/>
-        ))}
-        {/* 1. 더보기 텍스트 변경 */}
-        {thisMonthTxns.length>5&&(
-          <button onClick={()=>setTab("gallery")} style={{
-            width:"100%",background:"none",border:"none",color:"rgba(255,255,255,.4)",
-            fontSize:13,cursor:"pointer",padding:"12px",fontFamily:"inherit",fontWeight:600}}>
-            +더보기
-          </button>
-        )}
-      </div>
-    </div>
-  );
 
   /* ── GALLERY ── */
   const renderGallery=()=>(
@@ -703,9 +664,7 @@ export default function App() {
   );
 
   /* ── SETTINGS ── */
-  const renderSettings=()=>{
-    const [openSection,setOpenSection]=useState(null);
-  
+  const renderSettings=()=>{  
     const SettingRow=({icon,label,value,color,destructive,onClick,last})=>(
       <button onClick={onClick} style={{
         width:"100%",display:"flex",alignItems:"center",gap:14,
