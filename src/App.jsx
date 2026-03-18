@@ -637,7 +637,7 @@ export default function App() {
 
       {/* ══ GALLERY ══ */}
       {tab === "gallery" && !overlay && (
-        <div style={{ padding: "52px 22px 120px", position: "relative", zIndex: 1 }}>
+        <div style={{ padding: "52px 22px 40px", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 4, fontFamily: "'Nunito',sans-serif" }}>영수증 갤러리</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", marginBottom: 20 }}>{monthLabel()} · {Object.keys(recs).length}장</div>
           {Object.keys(recs).length > 0 && (
