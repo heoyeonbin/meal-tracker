@@ -670,7 +670,7 @@ export default function App() {
 
       {/* ══ SETTINGS ══ */}
       {tab === "settings" && !overlay && (
-        <div style={{ padding: "52px 22px 120px", position: "relative", zIndex: 1 }}>
+        <div style={{ padding: "52px 22px 40px", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}><Bori size={70} /></div>
           <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 26, fontFamily: "'Nunito',sans-serif", textAlign: "center" }}>설정</div>
 
