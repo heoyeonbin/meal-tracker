@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
+import { createClient } from '@supabase/supabase-js';
 
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 /* ── Fonts ── */
 if (!document.querySelector("#gf2")) {
   const l = document.createElement("link"); l.id = "gf2";
@@ -44,9 +49,52 @@ const LIMIT_BAR = 200_000;
 
 /* ── Storage (localStorage for deployed version) ── */
 const mKey = () => { const d = new Date(); return `meal-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwANXcBffHIpwV0cUoQl5gtUM84qDh76t71YSevbcHWyj38H3CjA8iGHr4bqYkZRCp7A/exec";
+
 const S = {
-  get: async k => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
-  set: async (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  get: async k => {
+    try {
+      const v = localStorage.getItem(k);
+      return v ? JSON.parse(v) : null;
+    } catch { return null; }
+  },
+  set: async (k, v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+  },
+};
+
+const GS = {
+  load: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    const { data } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    return data || [];
+  },
+  add: async tx => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("transactions").insert({
+      id: tx.id,
+      user_id: user.id,
+      amount: tx.amount,
+      merchant: tx.merchant,
+      date: tx.date,
+    });
+  },
+  del: async id => {
+    await supabase.from("transactions").delete().eq("id", id);
+  },
+  update: async tx => {
+    await supabase.from("transactions").update({
+      amount: tx.amount,
+      merchant: tx.merchant,
+      date: tx.date,
+    }).eq("id", tx.id);
+  },
 };
 const compress = (url, px = 900) => new Promise(res => {
   const img = new Image(); img.onload = () => {
@@ -309,14 +357,29 @@ export default function App() {
   const [form, setForm] = useState({ amount: "", merchant: "", date: "" });
   const [toast, setToast] = useState(null);
   const [notified, setNtf] = useState(false);
+  const [user, setUser] = useState(null);
   const camRef = useRef(); const galRef = useRef();
   const mk = mKey();
 
   useEffect(() => {
-    (async () => {
-      const [t, c, r] = await Promise.all([S.get(mk), S.get("cfg"), S.get(`recs-${mk}`)]);
-      if (t) setTxns(t); if (c) setCfg(c); if (r) setRecs(r);
-    })();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        Promise.all([GS.load(), S.get("cfg"), S.get(`recs-${mk}`)]).then(([rows, c, r]) => {
+          if (rows.length) setTxns(rows.map(row => ({
+            id: Number(row.id),
+            amount: Number(row.amount),
+            merchant: row.merchant,
+            date: row.date,
+          })));
+          if (c) setCfg(c);
+          if (r) setRecs(r);
+        });
+      }
+    });
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
   }, []);
 
   const ping = (msg, err = false) => { setToast({ msg, err }); setTimeout(() => setToast(null), 2400); };
@@ -356,17 +419,25 @@ export default function App() {
     const id = Date.now();
     const tx = { id, amount: amt, merchant: form.merchant || "식당", date: form.date || todayMD() };
     const next = [tx, ...txns];
-    await saveTxns(next);
+    setTxns(next);
+    await GS.add(tx);
     if (preview) { const c = await compress(preview); await saveRecs({ ...recs, [id]: c }); }
     tryNotify(LIMIT - next.reduce((s, t) => s + t.amount, 0));
     ping(`${amt.toLocaleString()}원 추가됐어요 ✨`);
     closeOv();
   };
 
-  const saveTx = async updated => { await saveTxns(txns.map(t => t.id === updated.id ? updated : t)); ping("수정됐어요"); };
+  const saveTx = async updated => {
+    setTxns(txns.map(t => t.id === updated.id ? updated : t));
+    await GS.update(updated);
+    ping("수정됐어요");
+  };
   const delTxn = async id => {
     const nr = { ...recs }; delete nr[id];
-    await saveTxns(txns.filter(t => t.id !== id)); await saveRecs(nr); ping("삭제됐어요");
+    setTxns(txns.filter(t => t.id !== id));
+    await GS.del(id);
+    await saveRecs(nr);
+    ping("삭제됐어요");
   };
   const dlRec = id => {
     const tx = txns.find(t => t.id === id);
@@ -400,7 +471,28 @@ export default function App() {
       opacity, pointerEvents: "none", zIndex: 0,
     }} />
   );
-
+  if (!user) return (
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #667eea 0%, #764ba2 35%, #f093fb 70%, #c471f5 100%)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      fontFamily: "'Noto Sans KR', sans-serif", color: "#fff",
+      width: "100%",        // ← 추가
+    }}>
+      <Bori size={100} />
+      <div style={{ fontSize: 24, fontWeight: 800, marginTop: 20, marginBottom: 8 }}>식대 트래커</div>
+      <div style={{ fontSize: 14, color: "rgba(255,255,255,.6)", marginBottom: 40 }}>법인카드 식대를 간편하게 관리해요</div>
+      <button onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } })}
+        style={{
+          display: "flex", alignItems: "center", gap: 12,
+          background: "#fff", color: "#1C1814", border: "none",
+          borderRadius: 14, padding: "14px 28px", fontSize: 15, fontWeight: 700,
+          cursor: "pointer", boxShadow: "0 8px 32px rgba(0,0,0,.2)"
+        }}>
+        <span>🔑</span> Google로 로그인
+      </button>
+    </div>
+  );
   return (
     <div style={bgStyle}>
       <Toast toast={toast} />
