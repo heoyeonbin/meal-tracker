@@ -637,7 +637,7 @@ export default function App() {
 
       {/* ══ GALLERY ══ */}
       {tab === "gallery" && !overlay && (
-        <div style={{ padding: "52px 22px 0", position: "relative", zIndex: 1 }}>
+        <div style={{ padding: "52px 22px 120px", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 4, fontFamily: "'Nunito',sans-serif" }}>영수증 갤러리</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", marginBottom: 20 }}>{monthLabel()} · {Object.keys(recs).length}장</div>
           {Object.keys(recs).length > 0 && (
@@ -670,7 +670,7 @@ export default function App() {
 
       {/* ══ SETTINGS ══ */}
       {tab === "settings" && !overlay && (
-        <div style={{ padding: "52px 22px 0", position: "relative", zIndex: 1 }}>
+        <div style={{ padding: "52px 22px 120px", position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}><Bori size={70} /></div>
           <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 26, fontFamily: "'Nunito',sans-serif", textAlign: "center" }}>설정</div>
 
@@ -705,11 +705,20 @@ export default function App() {
           </GlassCard>
 
           <PBtn onClick={() => { S.set("cfg", cfg); setNtf(false); ping("저장됐어요 ✨"); }}>전체 설정 저장</PBtn>
+          
+          <div style={{ marginTop: 16 }}>
+            <div className="glass-dark" style={{ borderRadius: 16, padding: "14px 18px", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)", marginBottom: 4 }}>로그인 계정</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{user?.email}</div>
+            </div>
+            <PBtn secondary onClick={() => { supabase.auth.signOut(); setUser(null); setTxns([]); }}>
+              로그아웃
+            </PBtn>
+          </div>
         </div>
       )}
-
       {/* ══ FAB ══ */}
-      {!overlay && (
+      {!overlay && tab !== "settings" && (
         <>
           {fabOpen && (
             <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", gap: 8, alignItems: "center", zIndex: 60, width: "100%", padding: "0 22px" }}>
@@ -729,7 +738,7 @@ export default function App() {
               ))}
             </div>
           )}
-          <div style={{ position: "fixed", bottom: 72, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, display: "flex", justifyContent: "center", zIndex: 80, pointerEvents: "none" }}>
+          <div style={{ position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, display: "flex", justifyContent: "center", zIndex: 80, pointerEvents: "none" }}>
             <button className="btn-press" onClick={() => setFab(p => !p)} style={{
               width: 58, height: 58, borderRadius: "50%",
               background: "linear-gradient(135deg, #A78BFA, #7C3AED)",
