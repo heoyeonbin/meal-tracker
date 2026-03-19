@@ -419,13 +419,13 @@ export default function App() {
 
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
   const filterLabel=monthLabel(galleryFilter);
-  const filteredTxns=txns.filter(tx=>{
+  cconst filteredTxns=txns.filter(tx=>{
     if(!tx.date) return galleryFilter===0;
     const [mm]=tx.date.split("/");
     const d=new Date(); d.setMonth(d.getMonth()-galleryFilter);
     return parseInt(mm)===d.getMonth()+1;
-  });
-  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;});
+  }).sort((a,b)=>b.id-a.id);
+  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).sort((a,b)=>b.id-a.id);
   const used=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
   const remaining=LIMIT-used;
   const pct=Math.min(100,(used/LIMIT)*100);
