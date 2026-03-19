@@ -189,7 +189,7 @@ const Toast = ({toast}) => toast?(
 
 const GlassInput = ({label,value,onChange,type="text",placeholder,big,hint}) => (
   <div style={{marginBottom:14}}>
-    {label&&<div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:7,fontWeight:700,letterSpacing:".8px",textTransform:"uppercase"}}>{label}</div>}
+   {label&&<div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:7,fontWeight:700,letterSpacing:".8px",textTransform:"uppercase",textAlign:"left"}}>{label}</div>}
     <input type={type} value={value} placeholder={placeholder}
       onChange={e=>onChange(e.target.value)}
       style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",
@@ -245,9 +245,6 @@ function TxRow({tx,onDel,onSave,delay=0}) {
     <div className="tx-row fu glass" onClick={()=>setEditing(true)} style={{display:"flex",alignItems:"center",gap:12,
       padding:"13px 14px",borderRadius:18,marginBottom:8,transition:"background .15s",
       animationDelay:`${delay}s`,cursor:"pointer"}}>
-      <div style={{width:40,height:40,borderRadius:14,flexShrink:0,
-        background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.25)",
-        display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🍽</div>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:14,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
         <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{tx.date}</div>
@@ -664,7 +661,6 @@ export default function App() {
               {filteredTxns.filter(t=>recs[t.id]).length}장 업로드됨
             </div>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
       </div>
 
@@ -793,8 +789,8 @@ export default function App() {
         {openSection==="alert"&&(
           <div style={{padding:"12px 16px 16px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
             <GlassInput label="알림 이메일" value={cfg.email} onChange={v=>setCfg(c=>({...c,email:v}))} placeholder="me@company.com"/>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8}}>알림 기준 잔액</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8,textAlign:"left"}}>알림 기준 잔액</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
               {[30000,50000,70000,100000].map(v=>(
                 <button key={v} className="btn-press" onClick={()=>setCfg(c=>({...c,threshold:v}))} style={{
                   padding:"7px 12px",borderRadius:99,fontFamily:"inherit",cursor:"pointer",
