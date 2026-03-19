@@ -864,9 +864,7 @@ export default function App() {
           <div style={{flex:1,textAlign:"left"}}>
             <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>잔액 알림</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
-              {cfg.email||cfg.threshold!==50000
-                ? `${cfg.email?cfg.email+' · ':''}${cfg.threshold.toLocaleString()}원 이하`
-                : "미설정"}</div>
+            {cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
