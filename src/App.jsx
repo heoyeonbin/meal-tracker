@@ -156,6 +156,15 @@ const IcPencil = () => (
     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
 );
+
+/* ── 다운로드 아이콘 (갤러리 전체 다운로드용) ── */
+const IcDownload = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v13M5 13l7 7 7-7"/>
+    <path d="M3 20h18"/>
+  </svg>
+);
+
 const IconHome = ({active}) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
@@ -197,7 +206,7 @@ const GlassInput = ({label,value,onChange,type="text",placeholder,big,hint}) => 
         color:"#fff",outline:"none",transition:"border-color .2s",colorScheme:"dark",fontFamily:"inherit"}}
       onFocus={e=>e.target.style.borderColor="rgba(74,158,255,.6)"}
       onBlur={e=>e.target.style.borderColor="rgba(255,255,255,.1)"}/>
-    {hint&&<div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:5}}>{hint}</div>}
+    {hint&&<div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:5,textAlign:"left"}}>{hint}</div>}
   </div>
 );
 
@@ -220,6 +229,13 @@ const SHead = ({children}) => (
     textTransform:"uppercase",marginBottom:8,textAlign:"left"}}>{children}</div>
 );
 
+/* ── 금액 포맷 유틸 ── */
+const formatAmt = raw => {
+  const n = parseInt(raw.replace(/[^0-9]/g,""), 10);
+  return isNaN(n) ? "" : n.toLocaleString();
+};
+const stripAmt = formatted => formatted.replace(/[^0-9]/g,"");
+
 /* ── TxRow (버튼 순서: [취소][저장]) ── */
 function TxRow({tx,onDel,onSave,delay=0}) {
   const [editing,setEditing]=useState(false);
@@ -234,7 +250,6 @@ function TxRow({tx,onDel,onSave,delay=0}) {
       <GlassInput label="가맹점명" value={merch} onChange={setMerch} placeholder="식당 이름"/>
       <GlassInput label="일자 (MM/DD)" value={date} onChange={setDate} placeholder="03/18"/>
       <div style={{display:"flex",gap:8}}>
-        {/* 순서 변경: 취소 먼저 */}
         <PBtn small secondary onClick={()=>setEditing(false)}>취소</PBtn>
         <PBtn small onClick={()=>{onSave({...tx,amount:parseInt(amt)||tx.amount,merchant:merch||tx.merchant,date:date||tx.date});setEditing(false);}}>저장</PBtn>
       </div>
@@ -245,7 +260,7 @@ function TxRow({tx,onDel,onSave,delay=0}) {
     <div className="tx-row fu glass" onClick={()=>setEditing(true)} style={{display:"flex",alignItems:"center",gap:12,
       padding:"13px 14px",borderRadius:18,marginBottom:8,transition:"background .15s",
       animationDelay:`${delay}s`,cursor:"pointer"}}>
-      <div style={{flex:1,minWidth:0}}>
+      <div style={{flex:1,minWidth:0,textAlign:"left"}}>
         <div style={{fontSize:14,fontWeight:600,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
         <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{tx.date}</div>
       </div>
@@ -327,8 +342,8 @@ export default function App() {
   const [galleryFilter,setGalleryFilter]=useState(0);
   const [openSection,setOpenSection]=useState(null);
   const [showAllTxns,setShowAllTxns]=useState(false);
-  const [bottomSheet,setBottomSheet]=useState(null); // {tx}
-  const [galleryEdit,setGalleryEdit]=useState(null); // tx
+  const [bottomSheet,setBottomSheet]=useState(null);
+  const [galleryEdit,setGalleryEdit]=useState(null);
   const camRef=useRef(); const galRef=useRef();
 
   useEffect(()=>{
@@ -415,14 +430,12 @@ export default function App() {
     closeOv();
   };
 
-  /* 이미지 보존: saveTx는 recs를 건드리지 않음 */
   const saveTx=async updated=>{
     setTxns(prev=>prev.map(t=>t.id===updated.id?updated:t));
     await GS.update(updated);
     ping("수정됐어요");
   };
 
-  /* 삭제만 recs 제거 */
   const delTxn=async id=>{
     const nr={...recs};delete nr[id];
     setTxns(prev=>prev.filter(t=>t.id!==id));
@@ -527,7 +540,18 @@ export default function App() {
                 인식 실패 — 아래에 직접 입력해주세요
               </div>
           )}
-          <GlassInput label="결제 금액 (원)" value={form.amount} onChange={v=>setForm(f=>({...f,amount:v}))} type="number" placeholder="13500" big hint="단체 식사 시 실제 부담 금액으로 수정하세요"/>
+          {/* ✅ 변경 1: 천단위 콤마 포맷 + hint 제거 */}
+          <GlassInput
+            label="결제 금액 (원)"
+            value={form.amount ? parseInt(form.amount, 10).toLocaleString() : ""}
+            onChange={v => {
+              const raw = v.replace(/[^0-9]/g, "");
+              setForm(f => ({ ...f, amount: raw }));
+            }}
+            type="text"
+            placeholder="13,500"
+            big
+          />
           <GlassInput label="일자 (MM/DD)" value={form.date} onChange={v=>setForm(f=>({...f,date:v}))} placeholder="03/18"/>
           <GlassInput label="가맹점명" value={form.merchant} onChange={v=>setForm(f=>({...f,merchant:v}))} placeholder="식당 이름"/>
           <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,padding:"16px 20px 36px",background:"linear-gradient(to top,rgba(13,13,20,1) 60%,transparent)"}}>
@@ -613,7 +637,6 @@ export default function App() {
             <div style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:6}}>우측 하단 + 버튼으로 추가해봐요</div>
           </div>
         )}
-        {/* 더보기 토글: 갤러리 이동 대신 인라인 펼치기 */}
         {(showAllTxns?thisMonthTxns:thisMonthTxns.slice(0,5)).map((tx,i)=>(
           <TxRow key={tx.id} tx={tx} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.05}/>
         ))}
@@ -631,7 +654,6 @@ export default function App() {
   /* ── GALLERY ── */
   const renderGallery=()=>(
     <div style={{padding:"52px 20px 0",position:"relative",zIndex:1}}>
-      {/* 헤더 — 피그마 스타일 */}
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
         <div style={{textAlign:"left"}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>ALL RECORDS</div>
@@ -639,7 +661,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* 월 합계 카드 — 피그마 스타일 */}
       <div className="glass" style={{borderRadius:20,padding:"16px 18px",marginBottom:16,
         background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
         border:"1px solid rgba(74,158,255,.2)"}}>
@@ -653,11 +674,11 @@ export default function App() {
             </svg>
           </div>
           <div style={{flex:1}}>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:3}}>{filterLabel} 합계</div>
-            <div style={{fontSize:24,fontWeight:800,letterSpacing:"-1px",color:"#4A9EFF"}}>
-              ₩{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}
+          <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:3,textAlign:"left"}}>{filterLabel} 합계</div>
+            <div style={{fontSize:24,fontWeight:800,letterSpacing:"-1px",color:"#4A9EFF",textAlign:"left"}}>
+               ₩{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}
             </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2,textAlign:"left"}}>
               {filteredTxns.filter(t=>recs[t.id]).length}장 업로드됨
             </div>
           </div>
@@ -678,9 +699,21 @@ export default function App() {
             })
           }}>{f.label}</button>
         ))}
+        {/* ✅ 변경 2: 전체 다운로드 버튼 (아이콘 포함) */}
         {Object.keys(recs).length>0&&(
-          <button onClick={dlAll} style={{marginLeft:"auto",background:"none",border:"none",color:"#4A9EFF",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600,flexShrink:0,whiteSpace:"nowrap"}}>
-            전체 ↓
+          <button onClick={dlAll} className="btn-press" style={{
+            marginLeft:"auto",
+            display:"flex",alignItems:"center",gap:5,
+            padding:"7px 14px",borderRadius:99,
+            background:"rgba(74,158,255,.15)",
+            border:"1px solid rgba(74,158,255,.35)",
+            color:"#4A9EFF",fontSize:12,fontWeight:700,
+            cursor:"pointer",fontFamily:"inherit",
+            flexShrink:0,whiteSpace:"nowrap",
+            transition:"all .2s",
+          }}>
+            <IcDownload/>
+            전체 다운로드
           </button>
         )}
       </div>
@@ -690,10 +723,8 @@ export default function App() {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {filteredTxns.filter(t=>recs[t.id]).map(tx=>(
             <div key={tx.id} className="glass" style={{borderRadius:18,overflow:"hidden",position:"relative"}}>
-              {/* 이미지 탭 → 다운로드 */}
               <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
                 style={{width:"100%",height:150,objectFit:"cover",display:"block",cursor:"pointer"}}/>
-              {/* ... 버튼 → 바텀시트 */}
               <button onClick={e=>{e.stopPropagation();setBottomSheet({tx});}} style={{
                 position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
                 background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",
@@ -721,7 +752,6 @@ export default function App() {
     <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
       <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:20,textAlign:"left"}}>설정</div>
 
-      {/* 프로필 카드 */}
       <div className="glass" style={{borderRadius:24,padding:"20px",marginBottom:24,
         background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
         border:"1px solid rgba(74,158,255,.2)"}}>
@@ -741,7 +771,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* WORKSPACE */}
       <SHead>Workspace</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>setOpenSection(openSection==="project"?null:"project")} style={{
@@ -768,7 +797,6 @@ export default function App() {
         )}
       </div>
 
-      {/* NOTIFICATIONS */}
       <SHead>Notifications</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>setOpenSection(openSection==="alert"?null:"alert")} style={{
@@ -802,14 +830,12 @@ export default function App() {
                 </button>
               ))}
             </div>
-            {/* 직접 입력 */}
             <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
             <PBtn small onClick={()=>{S.set("cfg",cfg);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
 
-      {/* DATA */}
       <SHead>Data</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={{
@@ -829,7 +855,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* ACCOUNT */}
       <SHead>Account</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}} style={{
@@ -863,7 +888,6 @@ export default function App() {
 
       <Toast toast={toast}/>
 
-      {/* 바텀시트 (갤러리 ...) */}
       {bottomSheet&&(
         <>
           <div onClick={()=>setBottomSheet(null)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)"}}/>
@@ -890,7 +914,6 @@ export default function App() {
         </>
       )}
 
-      {/* 갤러리 수정 오버레이 */}
       {galleryEdit&&(
         <GalleryEditOverlay
           tx={galleryEdit}
