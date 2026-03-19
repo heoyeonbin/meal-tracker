@@ -165,6 +165,20 @@ const IcDownload = () => (
   </svg>
 );
 
+/* ── Chevron 아이콘 (접기/더보기 토글용) ── */
+const IcChevronUp = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="4 15 12 7 20 15"/>
+  </svg>
+);
+const IcChevronDown = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="4 9 12 17 20 9"/>
+  </svg>
+);
+
 const IconHome = ({active}) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
@@ -239,14 +253,21 @@ const stripAmt = formatted => formatted.replace(/[^0-9]/g,"");
 /* ── TxRow (버튼 순서: [취소][저장]) ── */
 function TxRow({tx,onDel,onSave,delay=0}) {
   const [editing,setEditing]=useState(false);
-  const [amt,setAmt]=useState(String(tx.amount));
+  const [amt,setAmt]=useState(String(tx.amount)); // raw 숫자 문자열
   const [merch,setMerch]=useState(tx.merchant);
   const [date,setDate]=useState(tx.date||"");
 
   if(editing) return (
     <div className="fu glass" style={{borderRadius:18,padding:"16px",marginBottom:8,animationDelay:`${delay}s`}}>
       <div style={{fontSize:12,color:"#4A9EFF",fontWeight:700,marginBottom:10}}>내역 수정</div>
-      <GlassInput label="금액 (원)" value={amt} onChange={setAmt} type="number" placeholder="13500" big/>
+      <GlassInput
+        label="금액 (원)"
+        value={amt ? parseInt(amt,10).toLocaleString() : ""}
+        onChange={v => setAmt(v.replace(/[^0-9]/g,""))}
+        type="text"
+        placeholder="13,500"
+        big
+      />
       <GlassInput label="가맹점명" value={merch} onChange={setMerch} placeholder="식당 이름"/>
       <GlassInput label="일자 (MM/DD)" value={date} onChange={setDate} placeholder="03/18"/>
       <div style={{display:"flex",gap:8}}>
@@ -297,7 +318,7 @@ const TabBar = ({tab,setTab}) => (
 
 /* ── Gallery Edit Overlay ── */
 function GalleryEditOverlay({tx, recs, onSave, onClose}) {
-  const [amt,setAmt]=useState(String(tx.amount));
+  const [amt,setAmt]=useState(String(tx.amount)); // raw 숫자 문자열
   const [merch,setMerch]=useState(tx.merchant);
   const [date,setDate]=useState(tx.date||"");
 
@@ -313,7 +334,14 @@ function GalleryEditOverlay({tx, recs, onSave, onClose}) {
             <img src={recs[tx.id]} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
           </div>
         )}
-        <GlassInput label="금액 (원)" value={amt} onChange={setAmt} type="number" placeholder="13500" big/>
+        <GlassInput
+          label="금액 (원)"
+          value={amt ? parseInt(amt,10).toLocaleString() : ""}
+          onChange={v => setAmt(v.replace(/[^0-9]/g,""))}
+          type="text"
+          placeholder="13,500"
+          big
+        />
         <GlassInput label="가맹점명" value={merch} onChange={setMerch} placeholder="식당 이름"/>
         <GlassInput label="일자 (MM/DD)" value={date} onChange={setDate} placeholder="03/18"/>
         <div style={{display:"flex",gap:8}}>
@@ -643,8 +671,12 @@ export default function App() {
         {thisMonthTxns.length>5&&(
           <button onClick={()=>setShowAllTxns(p=>!p)} style={{
             width:"100%",background:"none",border:"none",color:"rgba(255,255,255,.4)",
-            fontSize:13,cursor:"pointer",padding:"12px",fontFamily:"inherit",fontWeight:600}}>
-            {showAllTxns?`▲ 접기`:`+더보기 (${thisMonthTxns.length-5}건)`}
+            fontSize:13,cursor:"pointer",padding:"12px",fontFamily:"inherit",fontWeight:600,
+            display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {showAllTxns
+              ? <><IcChevronUp/><span>접기</span></>
+              : <><IcChevronDown/><span>더보기 ({thisMonthTxns.length-5}건)</span></>
+            }
           </button>
         )}
       </div>
