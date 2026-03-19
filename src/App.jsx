@@ -864,7 +864,8 @@ export default function App() {
           <div style={{flex:1,textAlign:"left"}}>
             <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>잔액 알림</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
-            {cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}
+              {cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}
+          </div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
@@ -885,7 +886,7 @@ export default function App() {
               ))}
             </div>
             <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
-            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();if(!cfg.email){ping("이메일을 먼저 입력해주세요",true);return;}await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
