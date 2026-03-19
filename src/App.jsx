@@ -382,7 +382,6 @@ export default function App() {
   const [ocrRes,setOcr]=useState(null);
   const [form,setForm]=useState({amount:"",merchant:"",date:""});
   const [toast,setToast]=useState(null);
-  const [notified,setNtf]=useState(false);
   const [user,setUser]=useState(null);
   const [galleryFilter,setGalleryFilter]=useState(0);
   const [openSection,setOpenSection]=useState(null);
@@ -434,11 +433,7 @@ export default function App() {
   const saveRecs=async n=>{setRecs(n);await S.set(`recs-${mKey()}`,n);};
   const closeOv=()=>{setOv(null);setPv(null);setOcr(null);setForm({amount:"",merchant:"",date:""});};
 
-  const tryNotify=rem=>{
-    if(!cfg.email||rem>cfg.threshold||notified) return;
-    setNtf(true);
-    window.open(`mailto:${cfg.email}?subject=${encodeURIComponent(`[ExpenseFlow] 식대 잔액 ${rem.toLocaleString()}원`)}&body=${encodeURIComponent(`남은 금액: ${rem.toLocaleString()}원`)}`);
-  };
+ 
 
   const handleFile=useCallback(async file=>{
     if(!file) return; setFab(false);
@@ -474,7 +469,6 @@ export default function App() {
     }
   
     await GS.add(tx);
-    tryNotify(LIMIT-next.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).reduce((s,t)=>s+t.amount,0));
     ping(`${amt.toLocaleString()}원 추가됐어요`);
     closeOv();
   };
