@@ -22,7 +22,8 @@ if (!document.querySelector("#css3")) {
     input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.5}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes toast{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    @keyframes toast{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
     @keyframes fabPop{from{opacity:0;transform:scale(.85) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
     .fu{animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both}
     .glass{background:rgba(255,255,255,0.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12)}
@@ -119,22 +120,34 @@ function exportXlsx(txns, projectName) {
   XLSX.writeFile(wb,`${d.getMonth()+1}월_지출결의서_${proj||"식대"}.xlsx`);
 }
 
-/* ── Tab Icons (SVG) ── */
+/* ── SVG Line Icons ── */
+const IcCamera = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+  </svg>
+);
+const IcImage = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+  </svg>
+);
+const IcPencil = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
 const IconHome = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-    <path d="M9 21V12h6v9"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
   </svg>
 );
 const IconGallery = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/>
-    <circle cx="8.5" cy="8.5" r="1.5"/>
-    <path d="M21 15l-5-5L5 21"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
   </svg>
 );
 const IconSettings = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#4A9EFF":"rgba(255,255,255,.4)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3"/>
     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
   </svg>
@@ -142,11 +155,14 @@ const IconSettings = ({active}) => (
 
 /* ── UI Primitives ── */
 const Toast = ({toast}) => toast?(
-  <div style={{position:"fixed",top:22,left:"50%",transform:"translateX(-50%)",zIndex:9999,
+  <div style={{
+    position:"fixed", bottom:96, left:"50%", transform:"translateX(-50%)",
+    zIndex:9999,
     background:toast.err?"rgba(248,113,113,.92)":"rgba(74,158,255,.92)",
-    backdropFilter:"blur(12px)",color:"#fff",padding:"10px 22px",borderRadius:99,
-    fontSize:13,fontWeight:700,whiteSpace:"nowrap",boxShadow:"0 8px 32px rgba(0,0,0,.4)",
-    animation:"toast .25s ease both",border:"1px solid rgba(255,255,255,.2)"}}>
+    backdropFilter:"blur(12px)",color:"#fff",padding:"10px 22px",
+    borderRadius:99,fontSize:13,fontWeight:700,whiteSpace:"nowrap",
+    boxShadow:"0 8px 32px rgba(0,0,0,.4)",animation:"toast .25s ease both",
+    border:"1px solid rgba(255,255,255,.2)"}}>
     {toast.msg}
   </div>
 ):null;
@@ -174,17 +190,17 @@ const PBtn = ({onClick,children,secondary,small,color}) => (
       background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.15)",color:"rgba(255,255,255,.8)"
     }:{
       background:color||"linear-gradient(135deg,#4A9EFF,#2DD4BF)",
-      border:"none",color:"#fff",
-      boxShadow:"0 4px 20px rgba(74,158,255,.4)"
+      border:"none",color:"#fff",boxShadow:"0 4px 20px rgba(74,158,255,.4)"
     })
   }}>{children}</button>
 );
 
 const SHead = ({children}) => (
-  <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:10}}>{children}</div>
+  <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",
+    textTransform:"uppercase",marginBottom:8,textAlign:"left"}}>{children}</div>
 );
 
-/* ── TxRow (✎ 아이콘 없이, 탭으로 수정 접근 불가 → 홈에서만 표시) ── */
+/* ── TxRow (버튼 순서: [취소][저장]) ── */
 function TxRow({tx,onDel,onSave,delay=0}) {
   const [editing,setEditing]=useState(false);
   const [amt,setAmt]=useState(String(tx.amount));
@@ -198,8 +214,9 @@ function TxRow({tx,onDel,onSave,delay=0}) {
       <GlassInput label="가맹점명" value={merch} onChange={setMerch} placeholder="식당 이름"/>
       <GlassInput label="일자 (MM/DD)" value={date} onChange={setDate} placeholder="03/18"/>
       <div style={{display:"flex",gap:8}}>
-        <PBtn small onClick={()=>{onSave({...tx,amount:parseInt(amt)||tx.amount,merchant:merch||tx.merchant,date:date||tx.date});setEditing(false);}}>저장</PBtn>
+        {/* 순서 변경: 취소 먼저 */}
         <PBtn small secondary onClick={()=>setEditing(false)}>취소</PBtn>
+        <PBtn small onClick={()=>{onSave({...tx,amount:parseInt(amt)||tx.amount,merchant:merch||tx.merchant,date:date||tx.date});setEditing(false);}}>저장</PBtn>
       </div>
     </div>
   );
@@ -221,11 +238,12 @@ function TxRow({tx,onDel,onSave,delay=0}) {
   );
 }
 
-/* ── Tab Bar ── */
+/* ── Tab Bar (피그마 스타일 활성 탭) ── */
 const TabBar = ({tab,setTab}) => (
   <div className="glass" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
     width:"100%",maxWidth:430,display:"flex",zIndex:100,
-    paddingBottom:"env(safe-area-inset-bottom,8px)",borderRadius:"24px 24px 0 0",borderBottom:"none"}}>
+    paddingBottom:"env(safe-area-inset-bottom,8px)",borderRadius:"24px 24px 0 0",borderBottom:"none",
+    padding:"8px 8px 0"}}>
     {[
       {id:"home",label:"홈",Icon:IconHome},
       {id:"gallery",label:"갤러리",Icon:IconGallery},
@@ -233,17 +251,47 @@ const TabBar = ({tab,setTab}) => (
     ].map(({id,label,Icon})=>(
       <button key={id} className="btn-press" onClick={()=>setTab(id)} style={{
         flex:1,background:"none",border:"none",cursor:"pointer",
-        padding:"12px 0 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-        position:"relative"}}>
-        {tab===id&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",
-          width:32,height:3,borderRadius:"0 0 3px 3px",background:"#4A9EFF"}}/>}
+        padding:"8px 0 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+        position:"relative",borderRadius:16,transition:"background .2s",
+        background:tab===id?"rgba(74,158,255,.12)":"none",
+      }}>
         <Icon active={tab===id}/>
         <span style={{fontSize:10,fontWeight:tab===id?700:400,
-          color:tab===id?"#4A9EFF":"rgba(255,255,255,.35)",transition:"color .2s"}}>{label}</span>
+          color:tab===id?"#4A9EFF":"rgba(255,255,255,.4)",transition:"color .2s"}}>{label}</span>
       </button>
     ))}
   </div>
 );
+
+/* ── Gallery Edit Overlay ── */
+function GalleryEditOverlay({tx, recs, onSave, onClose}) {
+  const [amt,setAmt]=useState(String(tx.amount));
+  const [merch,setMerch]=useState(tx.merchant);
+  const [date,setDate]=useState(tx.date||"");
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",backdropFilter:"blur(8px)",zIndex:400,
+      display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+      <div style={{width:"100%",maxWidth:430,background:"linear-gradient(160deg,#0d0d14,#111827)",
+        borderRadius:"24px 24px 0 0",padding:"24px 20px 48px",animation:"slideUp .25s ease"}}>
+        <div style={{width:36,height:4,borderRadius:99,background:"rgba(255,255,255,.2)",margin:"0 auto 20px"}}/>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:16}}>내역 수정</div>
+        {recs[tx.id]&&(
+          <div style={{width:"100%",height:140,borderRadius:16,overflow:"hidden",marginBottom:16}}>
+            <img src={recs[tx.id]} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+          </div>
+        )}
+        <GlassInput label="금액 (원)" value={amt} onChange={setAmt} type="number" placeholder="13500" big/>
+        <GlassInput label="가맹점명" value={merch} onChange={setMerch} placeholder="식당 이름"/>
+        <GlassInput label="일자 (MM/DD)" value={date} onChange={setDate} placeholder="03/18"/>
+        <div style={{display:"flex",gap:8}}>
+          <PBtn small secondary onClick={onClose}>취소</PBtn>
+          <PBtn small onClick={()=>{onSave({...tx,amount:parseInt(amt)||tx.amount,merchant:merch||tx.merchant,date:date||tx.date});onClose();}}>저장</PBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ══ MAIN APP ══ */
 export default function App() {
@@ -261,6 +309,9 @@ export default function App() {
   const [user,setUser]=useState(null);
   const [galleryFilter,setGalleryFilter]=useState(0);
   const [openSection,setOpenSection]=useState(null);
+  const [showAllTxns,setShowAllTxns]=useState(false);
+  const [bottomSheet,setBottomSheet]=useState(null); // {tx}
+  const [galleryEdit,setGalleryEdit]=useState(null); // tx
   const camRef=useRef(); const galRef=useRef();
 
   useEffect(()=>{
@@ -329,11 +380,22 @@ export default function App() {
     closeOv();
   };
 
-  const saveTx=async updated=>{setTxns(txns.map(t=>t.id===updated.id?updated:t));await GS.update(updated);ping("수정됐어요");};
+  /* 이미지 보존: saveTx는 recs를 건드리지 않음 */
+  const saveTx=async updated=>{
+    setTxns(prev=>prev.map(t=>t.id===updated.id?updated:t));
+    await GS.update(updated);
+    ping("수정됐어요");
+  };
+
+  /* 삭제만 recs 제거 */
   const delTxn=async id=>{
     const nr={...recs};delete nr[id];
-    setTxns(txns.filter(t=>t.id!==id));await GS.del(id);await saveRecs(nr);ping("삭제됐어요");
+    setTxns(prev=>prev.filter(t=>t.id!==id));
+    await GS.del(id);
+    await saveRecs(nr);
+    ping("삭제됐어요");
   };
+
   const dlRec=id=>{
     const tx=txns.find(t=>t.id===id);
     const a=document.createElement("a");a.href=recs[id];a.download=`영수증_${tx?.merchant||id}.jpg`;a.click();
@@ -348,75 +410,38 @@ export default function App() {
     minHeight:"100vh",
     background:"linear-gradient(160deg,#0d0d14 0%,#111827 50%,#0d1f3a 100%)",
     color:"#fff",fontFamily:"'Noto Sans KR',sans-serif",
-    width:"100%",paddingBottom:84,position:"relative",  overflowX:"hidden",
+    width:"100%",paddingBottom:90,position:"relative",overflowX:"hidden",
   };
 
   /* ── LOGIN ── */
   if(!user) return (
     <div style={{...bgStyle,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",paddingBottom:0}}>
       <div style={{textAlign:"center",padding:"0 32px"}}>
-        {/* 3D 글래스 카드 아이콘 */}
         <div style={{width:100,height:100,margin:"0 auto 28px",position:"relative",animation:"float 3.5s ease-in-out infinite"}}>
           <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
             <defs>
-              <radialGradient id="cg1" cx="35%" cy="25%" r="70%">
-                <stop offset="0%" stopColor="#A8E0FF"/>
-                <stop offset="50%" stopColor="#5BB8F5"/>
-                <stop offset="100%" stopColor="#2A8EE0"/>
-              </radialGradient>
-              <radialGradient id="cg2" cx="30%" cy="20%" r="60%">
-                <stop offset="0%" stopColor="white" stopOpacity=".9"/>
-                <stop offset="60%" stopColor="white" stopOpacity=".2"/>
-                <stop offset="100%" stopColor="white" stopOpacity="0"/>
-              </radialGradient>
-              <linearGradient id="cg3" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#7DD4FC"/>
-                <stop offset="100%" stopColor="#1E7FD8"/>
-              </linearGradient>
-              <filter id="cf1" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#2A8EE0" floodOpacity=".45"/>
-              </filter>
+              <radialGradient id="cg1" cx="35%" cy="25%" r="70%"><stop offset="0%" stopColor="#A8E0FF"/><stop offset="50%" stopColor="#5BB8F5"/><stop offset="100%" stopColor="#2A8EE0"/></radialGradient>
+              <radialGradient id="cg2" cx="30%" cy="20%" r="60%"><stop offset="0%" stopColor="white" stopOpacity=".9"/><stop offset="60%" stopColor="white" stopOpacity=".2"/><stop offset="100%" stopColor="white" stopOpacity="0"/></radialGradient>
+              <filter id="cf1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#2A8EE0" floodOpacity=".45"/></filter>
             </defs>
-            {/* 카드 본체 — 살짝 기울어진 사각형 */}
             <g transform="rotate(-12 50 50)" filter="url(#cf1)">
               <rect x="10" y="22" width="80" height="52" rx="10" fill="url(#cg1)"/>
-              {/* 글로시 하이라이트 */}
               <ellipse cx="36" cy="34" rx="22" ry="10" fill="url(#cg2)" transform="rotate(-8 36 34)"/>
-              <rect x="10" y="22" width="80" height="52" rx="10"
-                fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="1.2"/>
-              {/* 칩 */}
+              <rect x="10" y="22" width="80" height="52" rx="10" fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="1.2"/>
               <rect x="18" y="32" width="16" height="12" rx="3" fill="#E8C96A" opacity=".95"/>
-              <rect x="21" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
-              <rect x="25" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
-              <rect x="29" y="32" width="1.5" height="12" fill="#C8A84A" opacity=".6"/>
-              <rect x="18" y="36" width="16" height="1.5" fill="#C8A84A" opacity=".6"/>
-              <rect x="18" y="40" width="16" height="1.5" fill="#C8A84A" opacity=".6"/>
-              {/* 카드번호 점선 */}
-              {[0,1,2,3].map(g=>(
-                <g key={g}>
-                  {[0,1,2,3].map(d=>(
-                    <circle key={d} cx={18+g*16+d*3.2} cy={54} r="1.2" fill="white" opacity=".7"/>
-                  ))}
-                </g>
-              ))}
-              {/* 마스터카드 로고 */}
+              {[0,1,2,3].map(g=>([0,1,2,3].map(d=>(<circle key={`${g}${d}`} cx={18+g*16+d*3.2} cy={54} r="1.2" fill="white" opacity=".7"/>))))}
               <circle cx="70" cy="62" r="7" fill="#FF6B6B" opacity=".8"/>
               <circle cx="78" cy="62" r="7" fill="#FFB347" opacity=".8"/>
             </g>
-            {/* 상단 반사광 */}
             <ellipse cx="46" cy="28" rx="18" ry="6" fill="white" opacity=".18" transform="rotate(-12 46 28)"/>
           </svg>
         </div>
-  
         <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",marginBottom:8}}>ExpenseFlow</div>
-        {/* 2. 서브타이틀 변경 */}
         <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:48}}>식대 사용 현황</div>
-        {/* 3. 버튼 텍스트 변경 */}
         <button className="btn-press" onClick={()=>supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}})} style={{
           display:"flex",alignItems:"center",gap:12,background:"#fff",color:"#1a1a2e",border:"none",
           borderRadius:18,padding:"15px 32px",fontSize:15,fontWeight:700,cursor:"pointer",
-          boxShadow:"0 8px 32px rgba(0,0,0,.3)",margin:"0 auto",fontFamily:"inherit"
-        }}>
+          boxShadow:"0 8px 32px rgba(0,0,0,.3)",margin:"0 auto",fontFamily:"inherit"}}>
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -429,7 +454,7 @@ export default function App() {
     </div>
   );
 
-  /* ── OVERLAY ── */
+  /* ── OVERLAY (영수증 추가) ── */
   const renderOverlay=()=>(
     <div style={{position:"fixed",inset:0,background:"linear-gradient(160deg,#0d0d14,#111827,#0d1f3a)",
       zIndex:200,maxWidth:430,margin:"0 auto",overflowY:"auto"}}>
@@ -442,7 +467,6 @@ export default function App() {
         </button>
         <div style={{fontSize:17,fontWeight:700}}>{overlay==="confirm"?"영수증 확인":overlay==="manual"?"직접 입력":"인식 중..."}</div>
       </div>
-
       {overlay==="loading"&&(
         <div style={{textAlign:"center",padding:"60px 24px"}}>
           {preview&&<img src={preview} alt="" style={{width:"100%",maxHeight:220,objectFit:"cover",borderRadius:20,marginBottom:28,opacity:.6}}/>}
@@ -450,7 +474,6 @@ export default function App() {
           <div style={{color:"rgba(255,255,255,.6)",fontSize:14}}>영수증 읽는 중...</div>
         </div>
       )}
-
       {(overlay==="confirm"||overlay==="manual")&&(
         <div className="fu" style={{padding:"0 20px 120px"}}>
           {overlay==="confirm"&&preview&&(
@@ -461,8 +484,8 @@ export default function App() {
           {overlay==="confirm"&&(
             ocrRes?.amount
               ?<div className="glass" style={{borderRadius:16,padding:"14px 18px",marginBottom:16}}>
-                <div style={{fontSize:10,color:"#4A9EFF",fontWeight:700,marginBottom:4,letterSpacing:".5px"}}>✓ 자동 인식 완료</div>
-                <div style={{fontSize:30,fontWeight:900,color:"#fff"}}>{ocrRes.amount.toLocaleString()}원</div>
+                <div style={{fontSize:10,color:"#4A9EFF",fontWeight:700,marginBottom:4}}>✓ 자동 인식 완료</div>
+                <div style={{fontSize:30,fontWeight:900}}>{ocrRes.amount.toLocaleString()}원</div>
                 {ocrRes.date&&<div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{ocrRes.date}</div>}
               </div>
               :<div style={{background:"rgba(248,113,113,.15)",border:"1px solid rgba(248,113,113,.3)",borderRadius:16,padding:"13px 18px",marginBottom:16,fontSize:13,color:"#F87171"}}>
@@ -483,15 +506,12 @@ export default function App() {
   /* ── HOME ── */
   const renderHome=()=>(
     <div style={{position:"relative",zIndex:1,width:"100%",overflowX:"hidden"}}>
-      {/* 헤더 - 좌측 정렬 */}
       <div style={{padding:"52px 20px 0",textAlign:"left"}}>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>
-          {monthLabel()} 식대
-        </div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>{monthLabel()} 식대</div>
         <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>ExpenseFlow</div>
       </div>
-  
-      {/* Hero balance */}
+
+      {/* Hero */}
       <div style={{padding:"16px 20px 0"}}>
         <div className="glass" style={{borderRadius:24,padding:"24px",
           background:"linear-gradient(135deg,rgba(74,158,255,.1) 0%,rgba(45,212,191,.07) 100%)",
@@ -504,43 +524,22 @@ export default function App() {
               </div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{used.toLocaleString()}원 사용 · 한도 200,000원</div>
             </div>
-            {/* 카드 아이콘 */}
             <div style={{flexShrink:0,marginLeft:12,animation:"float 3.5s ease-in-out infinite"}}>
               <svg width="72" height="72" viewBox="0 0 100 100" fill="none">
                 <defs>
-                  <radialGradient id="hcg1" cx="35%" cy="25%" r="70%">
-                    <stop offset="0%" stopColor="#A8E0FF"/>
-                    <stop offset="50%" stopColor="#5BB8F5"/>
-                    <stop offset="100%" stopColor="#2A8EE0"/>
-                  </radialGradient>
-                  <radialGradient id="hcg2" cx="30%" cy="20%" r="60%">
-                    <stop offset="0%" stopColor="white" stopOpacity=".85"/>
-                    <stop offset="60%" stopColor="white" stopOpacity=".2"/>
-                    <stop offset="100%" stopColor="white" stopOpacity="0"/>
-                  </radialGradient>
-                  <filter id="hcf1" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#2A8EE0" floodOpacity=".4"/>
-                  </filter>
+                  <radialGradient id="hcg1" cx="35%" cy="25%" r="70%"><stop offset="0%" stopColor="#A8E0FF"/><stop offset="50%" stopColor="#5BB8F5"/><stop offset="100%" stopColor="#2A8EE0"/></radialGradient>
+                  <radialGradient id="hcg2" cx="30%" cy="20%" r="60%"><stop offset="0%" stopColor="white" stopOpacity=".85"/><stop offset="60%" stopColor="white" stopOpacity=".2"/><stop offset="100%" stopColor="white" stopOpacity="0"/></radialGradient>
+                  <filter id="hcf1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#2A8EE0" floodOpacity=".4"/></filter>
                 </defs>
                 <g transform="rotate(-12 50 50)" filter="url(#hcf1)">
                   <rect x="8" y="20" width="84" height="56" rx="10" fill="url(#hcg1)"/>
                   <ellipse cx="36" cy="32" rx="24" ry="11" fill="url(#hcg2)" transform="rotate(-8 36 32)"/>
                   <rect x="8" y="20" width="84" height="56" rx="10" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.2"/>
                   <rect x="16" y="30" width="15" height="11" rx="3" fill="#E8C96A" opacity=".95"/>
-                  <rect x="19" y="30" width="1.3" height="11" fill="#C8A84A" opacity=".6"/>
-                  <rect x="23" y="30" width="1.3" height="11" fill="#C8A84A" opacity=".6"/>
-                  <rect x="27" y="30" width="1.3" height="11" fill="#C8A84A" opacity=".6"/>
-                  <rect x="16" y="34" width="15" height="1.3" fill="#C8A84A" opacity=".6"/>
-                  <rect x="16" y="38" width="15" height="1.3" fill="#C8A84A" opacity=".6"/>
-                  {[0,1,2,3].map(g=>(
-                    [0,1,2,3].map(d=>(
-                      <circle key={`${g}${d}`} cx={16+g*15+d*3} cy={54} r="1.1" fill="white" opacity=".65"/>
-                    ))
-                  ))}
+                  {[0,1,2,3].map(g=>([0,1,2,3].map(d=>(<circle key={`${g}${d}`} cx={16+g*15+d*3} cy={54} r="1.1" fill="white" opacity=".65"/>))))}
                   <circle cx="70" cy="62" r="6" fill="#FF6B6B" opacity=".8"/>
                   <circle cx="78" cy="62" r="6" fill="#FFB347" opacity=".8"/>
                 </g>
-                <ellipse cx="46" cy="26" rx="18" ry="5" fill="white" opacity=".15" transform="rotate(-12 46 26)"/>
               </svg>
             </div>
           </div>
@@ -554,7 +553,7 @@ export default function App() {
           </div>
         </div>
       </div>
-  
+
       {/* Stats */}
       <div style={{display:"flex",gap:8,padding:"10px 20px 0"}}>
         {[
@@ -568,7 +567,7 @@ export default function App() {
           </div>
         ))}
       </div>
-  
+
       {/* Tx list */}
       <div style={{padding:"16px 20px 0"}}>
         <SHead>이번 달 내역</SHead>
@@ -579,14 +578,15 @@ export default function App() {
             <div style={{fontSize:12,color:"rgba(255,255,255,.3)",marginTop:6}}>우측 하단 + 버튼으로 추가해봐요</div>
           </div>
         )}
-        {thisMonthTxns.slice(0,5).map((tx,i)=>(
+        {/* 더보기 토글: 갤러리 이동 대신 인라인 펼치기 */}
+        {(showAllTxns?thisMonthTxns:thisMonthTxns.slice(0,5)).map((tx,i)=>(
           <TxRow key={tx.id} tx={tx} onDel={()=>delTxn(tx.id)} onSave={saveTx} delay={i*.05}/>
         ))}
         {thisMonthTxns.length>5&&(
-          <button onClick={()=>setTab("gallery")} style={{
+          <button onClick={()=>setShowAllTxns(p=>!p)} style={{
             width:"100%",background:"none",border:"none",color:"rgba(255,255,255,.4)",
             fontSize:13,cursor:"pointer",padding:"12px",fontFamily:"inherit",fontWeight:600}}>
-            +더보기
+            {showAllTxns?`▲ 접기`:`+더보기 (${thisMonthTxns.length-5}건)`}
           </button>
         )}
       </div>
@@ -596,91 +596,97 @@ export default function App() {
   /* ── GALLERY ── */
   const renderGallery=()=>(
     <div style={{padding:"52px 20px 0",position:"relative",zIndex:1}}>
-      {/* 헤더 - 명시적 좌측 정렬 */}
-      <div style={{marginBottom:16,textAlign:"left",width:"100%"}}>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4,textAlign:"left"}}>영수증 보관함</div>
-        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",textAlign:"left"}}>갤러리</div>
+      {/* 헤더 — 피그마 스타일 */}
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+        <div style={{textAlign:"left"}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>ALL RECORDS</div>
+          <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>영수증 갤러리</div>
+        </div>
       </div>
-  
-      {/* Month summary */}
+
+      {/* 월 합계 카드 — 피그마 스타일 */}
       <div className="glass" style={{borderRadius:20,padding:"16px 18px",marginBottom:16,
-        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",border:"1px solid rgba(74,158,255,.2)"}}>
-        <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:4}}>{filterLabel} 합계</div>
-        <div style={{fontSize:26,fontWeight:800,letterSpacing:"-1px"}}>{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}원</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:3}}>{filteredTxns.length}건</div>
+        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
+        border:"1px solid rgba(74,158,255,.2)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14}}>
+          <div style={{width:48,height:48,borderRadius:16,flexShrink:0,
+            background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            boxShadow:"0 4px 16px rgba(74,158,255,.4)"}}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:3}}>{filterLabel} 합계</div>
+            <div style={{fontSize:24,fontWeight:800,letterSpacing:"-1px",color:"#4A9EFF"}}>
+              ₩{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}
+            </div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>
+              {filteredTxns.filter(t=>recs[t.id]).length}장 업로드됨
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
       </div>
-  
-      {/* 이미지 그리드 + 필터 */}
+
+      {/* 필터 칩 */}
+      <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:2}}>
+        {[{label:"이번 달",offset:0},{label:"지난 달",offset:1},{label:"2달 전",offset:2}].map(f=>(
+          <button key={f.offset} className="btn-press" onClick={()=>setGalleryFilter(f.offset)} style={{
+            padding:"7px 16px",borderRadius:99,whiteSpace:"nowrap",fontSize:12,fontWeight:600,cursor:"pointer",
+            transition:"all .2s",fontFamily:"inherit",flexShrink:0,
+            ...(galleryFilter===f.offset?{
+              background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",color:"#fff",border:"none",
+              boxShadow:"0 2px 12px rgba(74,158,255,.4)"
+            }:{
+              background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.5)"
+            })
+          }}>{f.label}</button>
+        ))}
+        {Object.keys(recs).length>0&&(
+          <button onClick={dlAll} style={{marginLeft:"auto",background:"none",border:"none",color:"#4A9EFF",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600,flexShrink:0,whiteSpace:"nowrap"}}>
+            전체 ↓
+          </button>
+        )}
+      </div>
+
+      {/* 이미지 그리드 */}
       {filteredTxns.filter(t=>recs[t.id]).length>0?(
-        <>
-          {/* 필터 버튼 — 이미지 바로 위 */}
-          <div style={{display:"flex",gap:8,marginBottom:12}}>
-            {[{label:"이번 달",offset:0},{label:"지난 달",offset:1},{label:"2달 전",offset:2}].map(f=>(
-              <button key={f.offset} className="btn-press" onClick={()=>setGalleryFilter(f.offset)} style={{
-                padding:"7px 14px",borderRadius:99,whiteSpace:"nowrap",fontSize:12,fontWeight:600,cursor:"pointer",
-                transition:"all .2s",fontFamily:"inherit",
-                ...(galleryFilter===f.offset?{
-                  background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",color:"#fff",border:"none",
-                  boxShadow:"0 2px 12px rgba(74,158,255,.4)"
-                }:{
-                  background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.5)"
-                })
-              }}>{f.label}</button>
-            ))}
-            <div style={{flex:1}}/>
-            <button onClick={dlAll} style={{background:"none",border:"none",color:"#4A9EFF",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
-              전체 ↓
-            </button>
-          </div>
-  
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {filteredTxns.filter(t=>recs[t.id]).map(tx=>(
-              <div key={tx.id} className="glass" style={{borderRadius:18,overflow:"hidden",position:"relative"}}>
-                <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
-                  style={{width:"100%",height:150,objectFit:"cover",display:"block",cursor:"pointer"}}/>
-                <button onClick={()=>delTxn(tx.id)} style={{
-                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
-                  background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",
-                  border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:15,cursor:"pointer",
-                  display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
-                <div style={{padding:"9px 12px"}}>
-                  <div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
-                  <div style={{fontSize:12,color:"#4A9EFF",fontWeight:700,marginTop:2}}>{tx.amount.toLocaleString()}원</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tx.date}</div>
-                </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {filteredTxns.filter(t=>recs[t.id]).map(tx=>(
+            <div key={tx.id} className="glass" style={{borderRadius:18,overflow:"hidden",position:"relative"}}>
+              {/* 이미지 탭 → 다운로드 */}
+              <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
+                style={{width:"100%",height:150,objectFit:"cover",display:"block",cursor:"pointer"}}/>
+              {/* ... 버튼 → 바텀시트 */}
+              <button onClick={e=>{e.stopPropagation();setBottomSheet({tx});}} style={{
+                position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
+                background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",
+                border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:16,cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,
+                letterSpacing:"1px",lineHeight:1}}>···</button>
+              <div style={{padding:"9px 12px"}}>
+                <div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
+                <div style={{fontSize:12,color:"#4A9EFF",fontWeight:700,marginTop:2}}>{tx.amount.toLocaleString()}원</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tx.date}</div>
               </div>
-            ))}
-          </div>
-        </>
+            </div>
+          ))}
+        </div>
       ):(
-        <>
-          {/* 필터 버튼 — 빈 상태에도 표시 */}
-          <div style={{display:"flex",gap:8,marginBottom:16}}>
-            {[{label:"이번 달",offset:0},{label:"지난 달",offset:1},{label:"2달 전",offset:2}].map(f=>(
-              <button key={f.offset} className="btn-press" onClick={()=>setGalleryFilter(f.offset)} style={{
-                padding:"7px 14px",borderRadius:99,whiteSpace:"nowrap",fontSize:12,fontWeight:600,cursor:"pointer",
-                transition:"all .2s",fontFamily:"inherit",
-                ...(galleryFilter===f.offset?{
-                  background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",color:"#fff",border:"none",
-                  boxShadow:"0 2px 12px rgba(74,158,255,.4)"
-                }:{
-                  background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.5)"
-                })
-              }}>{f.label}</button>
-            ))}
-          </div>
-          <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>
-            저장된 영수증 이미지가 없어요
-          </div>
-        </>
+        <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>
+          저장된 영수증 이미지가 없어요
+        </div>
       )}
     </div>
   );
+
   /* ── SETTINGS ── */
   const renderSettings=()=>(
     <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
       <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px",marginBottom:20,textAlign:"left"}}>설정</div>
-  
+
       {/* 프로필 카드 */}
       <div className="glass" style={{borderRadius:24,padding:"20px",marginBottom:24,
         background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",
@@ -691,25 +697,23 @@ export default function App() {
             display:"flex",alignItems:"center",justifyContent:"center",
             boxShadow:"0 4px 16px rgba(74,158,255,.4)"}}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
           <div>
-            <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{user?.email?.split("@")[0]}</div>
+            <div style={{fontSize:16,fontWeight:700}}>{user?.email?.split("@")[0]}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{user?.email}</div>
           </div>
         </div>
       </div>
-  
+
       {/* WORKSPACE */}
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>WORKSPACE</div>
+      <SHead>Workspace</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-        {/* 프로젝트명 */}
         <button onClick={()=>setOpenSection(openSection==="project"?null:"project")} style={{
           width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
-          background:"none",border:"none",cursor:"pointer",
-          borderBottom:openSection==="project"?"1px solid rgba(255,255,255,.06)":"none",fontFamily:"inherit"}}>
+          background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",
+          borderBottom:openSection==="project"?"1px solid rgba(255,255,255,.06)":"none"}}>
           <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
             background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.25)"}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" strokeWidth="2">
@@ -729,9 +733,9 @@ export default function App() {
           </div>
         )}
       </div>
-  
+
       {/* NOTIFICATIONS */}
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>NOTIFICATIONS</div>
+      <SHead>Notifications</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>setOpenSection(openSection==="alert"?null:"alert")} style={{
           width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
@@ -752,7 +756,7 @@ export default function App() {
           <div style={{padding:"12px 16px 16px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
             <GlassInput label="알림 이메일" value={cfg.email} onChange={v=>setCfg(c=>({...c,email:v}))} placeholder="me@company.com"/>
             <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8}}>알림 기준 잔액</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
               {[30000,50000,70000,100000].map(v=>(
                 <button key={v} className="btn-press" onClick={()=>setCfg(c=>({...c,threshold:v}))} style={{
                   padding:"7px 12px",borderRadius:99,fontFamily:"inherit",cursor:"pointer",
@@ -764,13 +768,15 @@ export default function App() {
                 </button>
               ))}
             </div>
+            {/* 직접 입력 */}
+            <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
             <PBtn small onClick={()=>{S.set("cfg",cfg);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
-  
+
       {/* DATA */}
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>DATA</div>
+      <SHead>Data</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={{
           width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
@@ -788,9 +794,9 @@ export default function App() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-  
+
       {/* ACCOUNT */}
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.35)",letterSpacing:".8px",marginBottom:8}}>ACCOUNT</div>
+      <SHead>Account</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}} style={{
           width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
@@ -807,15 +813,14 @@ export default function App() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-  
+
       <div style={{textAlign:"center",marginTop:8}}>
         <p style={{color:"rgba(255,255,255,.2)",fontSize:11}}>ExpenseFlow v1.0.0 · © 2026</p>
       </div>
     </div>
   );
 
-  /* ── FAB 위치: 컨테이너 기준 우측 20px ── */
-  const fabRight = `max(20px, calc((100vw - 430px) / 2 + 20px))`;
+  const fabRight=`max(20px, calc((100vw - 430px) / 2 + 20px))`;
 
   return (
     <div style={bgStyle}>
@@ -823,6 +828,43 @@ export default function App() {
       <div style={{position:"absolute",top:"40%",left:-60,width:200,height:200,borderRadius:"50%",background:"rgba(45,212,191,.06)",filter:"blur(50px)",pointerEvents:"none",zIndex:0}}/>
 
       <Toast toast={toast}/>
+
+      {/* 바텀시트 (갤러리 ...) */}
+      {bottomSheet&&(
+        <>
+          <div onClick={()=>setBottomSheet(null)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)"}}/>
+          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
+            width:"100%",maxWidth:430,background:"#141828",borderRadius:"24px 24px 0 0",
+            padding:"8px 20px 48px",zIndex:301,animation:"slideUp .22s ease"}}>
+            <div style={{width:36,height:4,borderRadius:99,background:"rgba(255,255,255,.2)",margin:"0 auto 20px"}}/>
+            <div style={{fontSize:14,fontWeight:600,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>
+              {bottomSheet.tx.merchant}
+            </div>
+            <button onClick={()=>{setGalleryEdit(bottomSheet.tx);setBottomSheet(null);}} style={{
+              width:"100%",padding:"15px",borderRadius:16,background:"rgba(74,158,255,.15)",
+              border:"1px solid rgba(74,158,255,.3)",color:"#4A9EFF",fontSize:15,fontWeight:700,
+              cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>
+              수정
+            </button>
+            <button onClick={()=>{delTxn(bottomSheet.tx.id);setBottomSheet(null);}} style={{
+              width:"100%",padding:"15px",borderRadius:16,background:"rgba(248,113,113,.12)",
+              border:"1px solid rgba(248,113,113,.25)",color:"#F87171",fontSize:15,fontWeight:700,
+              cursor:"pointer",fontFamily:"inherit"}}>
+              삭제
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* 갤러리 수정 오버레이 */}
+      {galleryEdit&&(
+        <GalleryEditOverlay
+          tx={galleryEdit}
+          recs={recs}
+          onSave={saveTx}
+          onClose={()=>setGalleryEdit(null)}/>
+      )}
+
       {fabOpen&&<div onClick={()=>setFab(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)",backdropFilter:"blur(3px)"}}/>}
       {overlay&&renderOverlay()}
 
@@ -830,15 +872,15 @@ export default function App() {
       {!overlay&&tab==="gallery"&&renderGallery()}
       {!overlay&&tab==="settings"&&renderSettings()}
 
-      {/* 8. FAB — 컨테이너 안에 고정 */}
+      {/* FAB */}
       {!overlay&&tab!=="settings"&&(
         <>
           {fabOpen&&(
             <div style={{position:"fixed",bottom:150,right:fabRight,display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end",zIndex:60}}>
               {[
-                {icon:"📷",label:"카메라로 찍기",fn:()=>camRef.current?.click()},
-                {icon:"🖼",label:"갤러리에서 불러오기",fn:()=>galRef.current?.click()},
-                {icon:"✏️",label:"직접 입력",fn:()=>{setForm({amount:"",merchant:"",date:todayMD()});setOv("manual");setFab(false);}},
+                {Icon:IcCamera,label:"카메라로 찍기",fn:()=>camRef.current?.click()},
+                {Icon:IcImage,label:"갤러리에서 불러오기",fn:()=>galRef.current?.click()},
+                {Icon:IcPencil,label:"직접 입력",fn:()=>{setForm({amount:"",merchant:"",date:todayMD()});setOv("manual");setFab(false);}},
               ].map((opt,i)=>(
                 <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press" style={{
                   display:"flex",alignItems:"center",gap:10,
@@ -847,7 +889,11 @@ export default function App() {
                   cursor:"pointer",boxShadow:"0 8px 32px rgba(0,0,0,.4)",backdropFilter:"blur(20px)",
                   animation:"fabPop .2s ease both",animationDelay:`${i*.06}s`,fontFamily:"inherit",
                   whiteSpace:"nowrap",transition:"transform .15s"}}>
-                  <span style={{fontSize:18}}>{opt.icon}</span><span>{opt.label}</span>
+                  <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#4A9EFF,#2DD4BF)",
+                    display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <opt.Icon/>
+                  </div>
+                  <span>{opt.label}</span>
                 </button>
               ))}
             </div>
