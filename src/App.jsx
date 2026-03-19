@@ -843,52 +843,6 @@ export default function App() {
           </div>
         )}
       </div>
-
-      <SHead>Notifications</SHead>
-      <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
-        <button onClick={()=>setOpenSection(openSection==="alert"?null:"alert")} style={{
-          width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",
-          background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
-          <div style={{width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
-            background:"rgba(45,212,191,.15)",border:"1px solid rgba(45,212,191,.25)"}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2">
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
-            </svg>
-          </div>
-          <div style={{flex:1,textAlign:"left"}}>
-            <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>잔액 알림</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
-              {cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}
-          </div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        {openSection==="alert"&&(
-          <div style={{padding:"12px 16px 16px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
-            <GlassInput label="알림 이메일" value={cfg.email} onChange={v=>setCfg(c=>({...c,email:v}))} placeholder="me@company.com"/>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:8,textAlign:"left"}}>알림 기준 잔액</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-              {[30000,50000,70000,100000].map(v=>(
-                <button key={v} className="btn-press" onClick={()=>setCfg(c=>({...c,threshold:v}))} style={{
-                  padding:"7px 12px",borderRadius:99,fontFamily:"inherit",cursor:"pointer",
-                  border:`1.5px solid ${cfg.threshold===v?"rgba(74,158,255,.8)":"rgba(255,255,255,.12)"}`,
-                  background:cfg.threshold===v?"rgba(74,158,255,.2)":"rgba(255,255,255,.05)",
-                  color:cfg.threshold===v?"#4A9EFF":"rgba(255,255,255,.5)",
-                  fontSize:11,fontWeight:cfg.threshold===v?700:400}}>
-                  {v.toLocaleString()}원
-                </button>
-              ))}
-            </div>
-            <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
-            <PBtn small onClick={async()=>{
-  if(!cfg.email){ping("이메일을 먼저 입력해주세요",true);return;}
-  const{data:{user:u}}=await supabase.auth.getUser();
-  await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");
-}}>저장</PBtn>
-          </div>
-        )}
-      </div>
-
       <SHead>Data</SHead>
       <div className="glass" style={{borderRadius:20,overflow:"hidden",marginBottom:20}}>
         <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={{
