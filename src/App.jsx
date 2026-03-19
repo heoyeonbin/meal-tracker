@@ -67,6 +67,19 @@ const compress = (url,px=900) => new Promise(res => {
     c.getContext("2d").drawImage(img,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",.7));
   }; img.src=url;
 });
+const uploadReceipt = async (userId, txId, dataUrl) => {
+  try {
+    const base64 = dataUrl.split(",")[1];
+    const mime = dataUrl.split(";")[0].split(":")[1];
+    const ext = mime === "image/png" ? "png" : "jpg";
+    const path = `${userId}/${txId}.${ext}`;
+    const blob = await fetch(dataUrl).then(r=>r.blob());
+    const { error } = await supabase.storage.from("receipts").upload(path, blob, {contentType:mime, upsert:true});
+    if (error) return null;
+    const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+    return data.publicUrl;
+  } catch { return null; }
+};
 
 async function ocr(b64, mt) {
   try {
@@ -374,7 +387,13 @@ export default function App() {
     const next=[tx,...txns];
     setTxns(next);
     await GS.add(tx);
-    if(preview){const c=await compress(preview);await saveRecs({...recs,[id]:c});}
+    if(preview){
+      const { data:{ user:u } } = await supabase.auth.getUser();
+      const c = await compress(preview);
+      const url = await uploadReceipt(u.id, id, c);
+      if(url) await saveRecs({...recs,[id]:url});
+      else await saveRecs({...recs,[id]:c});
+    }
     tryNotify(LIMIT-next.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).reduce((s,t)=>s+t.amount,0));
     ping(`${amt.toLocaleString()}원 추가됐어요`);
     closeOv();
