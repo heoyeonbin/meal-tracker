@@ -54,10 +54,17 @@ const GS = {
   add: async tx => {
     const { data:{ user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("transactions").insert({ id:tx.id, user_id:user.id, amount:tx.amount, merchant:tx.merchant, date:tx.date });
+    await supabase.from("transactions").insert({
+      id:tx.id, user_id:user.id, amount:tx.amount,
+      merchant:tx.merchant, date:tx.date, image_url:tx.image_url||null
+    });
   },
   del: async id => { await supabase.from("transactions").delete().eq("id",id); },
-  update: async tx => { await supabase.from("transactions").update({ amount:tx.amount, merchant:tx.merchant, date:tx.date }).eq("id",tx.id); },
+  update: async tx => {
+    await supabase.from("transactions").update({
+      amount:tx.amount, merchant:tx.merchant, date:tx.date
+    }).eq("id",tx.id);
+  },
 };
 
 const compress = (url,px=900) => new Promise(res => {
@@ -332,9 +339,17 @@ export default function App() {
       setUser(user);
       if(user){
         Promise.all([GS.load(),S.get("cfg"),S.get(`recs-${mKey()}`)]).then(([rows,c,r])=>{
-          if(rows.length) setTxns(rows.map(row=>({id:Number(row.id),amount:Number(row.amount),merchant:row.merchant,date:row.date})));
+          if(rows.length) {
+            setTxns(rows.map(row=>({
+              id:Number(row.id),amount:Number(row.amount),
+              merchant:row.merchant,date:row.date,
+              image_url:row.image_url||null
+            })));
+            const recsFromDb = {};
+            rows.forEach(row=>{ if(row.image_url) recsFromDb[Number(row.id)]=row.image_url; });
+            setRecs(recsFromDb);
+          }
           if(c) setCfg(c);
-          if(r) setRecs(r);
         });
       }
     });
@@ -383,17 +398,21 @@ export default function App() {
     const amt=parseInt(form.amount.replace(/,/g,""),10);
     if(!amt||amt<=0){ping("금액을 입력해주세요",true);return;}
     const id=Date.now();
-    const tx={id,amount:amt,merchant:form.merchant||"식당",date:form.date||todayMD()};
+    const tx={id,amount:amt,merchant:form.merchant||"식당",date:form.date||todayMD(),image_url:null};
     const next=[tx,...txns];
     setTxns(next);
-    await GS.add(tx);
+  
     if(preview){
       const { data:{ user:u } } = await supabase.auth.getUser();
       const c = await compress(preview);
       const url = await uploadReceipt(u.id, id, c);
-      if(url) await saveRecs({...recs,[id]:url});
-      else await saveRecs({...recs,[id]:c});
+      if(url){
+        tx.image_url=url;
+        setRecs(prev=>({...prev,[id]:url}));
+      }
     }
+  
+    await GS.add(tx);
     tryNotify(LIMIT-next.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).reduce((s,t)=>s+t.amount,0));
     ping(`${amt.toLocaleString()}원 추가됐어요`);
     closeOv();
