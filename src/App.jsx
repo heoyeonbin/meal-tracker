@@ -676,52 +676,6 @@ export default function App() {
       )}
     </div>
   );
-
-      {/* Month summary */}
-      <div className="glass" style={{borderRadius:20,padding:"16px 18px",marginBottom:16,
-        background:"linear-gradient(135deg,rgba(74,158,255,.1),rgba(45,212,191,.07))",border:"1px solid rgba(74,158,255,.2)"}}>
-        <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:4}}>{filterLabel} 합계</div>
-        <div style={{fontSize:26,fontWeight:800,letterSpacing:"-1px"}}>{filteredTxns.reduce((s,t)=>s+t.amount,0).toLocaleString()}원</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:3}}>{filteredTxns.length}건</div>
-      </div>
-
-      {/* 5/7. 이미지 그리드만 — 리스트 없음, X버튼 + 다운로드 버튼 */}
-      {filteredTxns.filter(t=>recs[t.id]).length>0?(
-        <>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <SHead>영수증 이미지</SHead>
-            <button onClick={dlAll} style={{background:"none",border:"none",color:"#4A9EFF",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
-              전체 다운로드 ↓
-            </button>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {filteredTxns.filter(t=>recs[t.id]).map(tx=>(
-              <div key={tx.id} className="glass" style={{borderRadius:18,overflow:"hidden",position:"relative"}}>
-                <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
-                  style={{width:"100%",height:150,objectFit:"cover",display:"block",cursor:"pointer"}}/>
-                {/* X 삭제 버튼 */}
-                <button onClick={()=>delTxn(tx.id)} style={{
-                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
-                  background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)",
-                  border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:15,cursor:"pointer",
-                  display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
-                <div style={{padding:"9px 12px"}}>
-                  <div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
-                  <div style={{fontSize:12,color:"#4A9EFF",fontWeight:700,marginTop:2}}>{tx.amount.toLocaleString()}원</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tx.date}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      ):(
-        <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,.4)",fontSize:14}}>
-          저장된 영수증 이미지가 없어요
-        </div>
-      )}
-    </div>
-  );
-
   /* ── SETTINGS ── */
   const renderSettings=()=>(
     <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
