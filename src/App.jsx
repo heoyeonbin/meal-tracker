@@ -845,7 +845,7 @@ export default function App() {
         {openSection==="project"&&(
           <div style={{padding:"12px 16px 16px"}}>
             <GlassInput value={cfg.projectName} onChange={v=>setCfg(c=>({...c,projectName:v}))} placeholder="예: 2025 마케팅팀" hint="엑셀 지출결의서에 자동 입력"/>
-            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setOpenSection(null);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
@@ -863,7 +863,10 @@ export default function App() {
           </div>
           <div style={{flex:1,textAlign:"left"}}>
             <div style={{fontSize:14,fontWeight:500,color:"#fff"}}>잔액 알림</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>{cfg.email?`${cfg.email} · ${cfg.threshold.toLocaleString()}원 이하`:"미설정"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
+              {cfg.email||cfg.threshold!==50000
+                ? `${cfg.email?cfg.email+' · ':''}${cfg.threshold.toLocaleString()}원 이하`
+                : "미설정"}</div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
@@ -884,7 +887,7 @@ export default function App() {
               ))}
             </div>
             <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
-            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
