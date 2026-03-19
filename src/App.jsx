@@ -66,6 +66,23 @@ const GS = {
     }).eq("id",tx.id);
   },
 };
+const US = {
+  load: async () => {
+    const { data:{ user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data } = await supabase.from("user_settings").select("*").eq("user_id",user.id).single();
+    return data;
+  },
+  save: async (cfg, userId) => {
+    await supabase.from("user_settings").upsert({
+      user_id: userId,
+      project_name: cfg.projectName||"",
+      email: cfg.email||"",
+      threshold: cfg.threshold||50000,
+      updated_at: new Date().toISOString()
+    });
+  },
+};
 
 const compress = (url,px=900) => new Promise(res => {
   const img=new Image(); img.onload=()=>{
@@ -378,7 +395,7 @@ export default function App() {
     supabase.auth.getUser().then(({data:{user}})=>{
       setUser(user);
       if(user){
-        Promise.all([GS.load(),S.get("cfg"),S.get(`recs-${mKey()}`)]).then(([rows,c,r])=>{
+        Promise.all([GS.load(), US.load()]).then(([rows, settings])=>{
           if(rows.length) {
             setTxns(rows.map(row=>({
               id:Number(row.id),amount:Number(row.amount),
@@ -389,7 +406,11 @@ export default function App() {
             rows.forEach(row=>{ if(row.image_url) recsFromDb[Number(row.id)]=row.image_url; });
             setRecs(recsFromDb);
           }
-          if(c) setCfg(c);
+          if(settings) setCfg({
+            projectName: settings.project_name||"",
+            email: settings.email||"",
+            threshold: settings.threshold||50000,
+          });
         });
       }
     });
@@ -824,7 +845,7 @@ export default function App() {
         {openSection==="project"&&(
           <div style={{padding:"12px 16px 16px"}}>
             <GlassInput value={cfg.projectName} onChange={v=>setCfg(c=>({...c,projectName:v}))} placeholder="예: 2025 마케팅팀" hint="엑셀 지출결의서에 자동 입력"/>
-            <PBtn small onClick={()=>{S.set("cfg",cfg);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
@@ -863,7 +884,7 @@ export default function App() {
               ))}
             </div>
             <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
-            <PBtn small onClick={()=>{S.set("cfg",cfg);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setNtf(false);ping("저장됐어요");}}>저장</PBtn>
           </div>
         )}
       </div>
