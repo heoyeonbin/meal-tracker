@@ -419,13 +419,13 @@ export default function App() {
 
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
   const filterLabel=monthLabel(galleryFilter);
-  cconst filteredTxns=txns.filter(tx=>{
+  const filteredTxns=txns.filter(tx=>{
     if(!tx.date) return galleryFilter===0;
     const [mm]=tx.date.split("/");
     const d=new Date(); d.setMonth(d.getMonth()-galleryFilter);
     return parseInt(mm)===d.getMonth()+1;
-  }).sort((a,b)=>b.id-a.id);
-  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).sort((a,b)=>b.id-a.id);
+  }).sort((a,b)=>{const[am,ad]=(a.date||"").split("/");const[bm,bd]=(b.date||"").split("/");return (parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
+  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;}).sort((a,b)=>{const[am,ad]=(a.date||"").split("/");const[bm,bd]=(b.date||"").split("/");return (parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
   const used=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
   const remaining=LIMIT-used;
   const pct=Math.min(100,(used/LIMIT)*100);
