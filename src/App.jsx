@@ -600,7 +600,7 @@ export default function App() {
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
         <div style={{textAlign:"left"}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.35)",letterSpacing:".8px",textTransform:"uppercase",marginBottom:4}}>ALL RECORDS</div>
-          <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>영수증 갤러리</div>
+          <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>갤러리</div>
         </div>
       </div>
 
