@@ -886,7 +886,11 @@ export default function App() {
               ))}
             </div>
             <GlassInput label="직접 입력 (원)" value={String(cfg.threshold)} onChange={v=>setCfg(c=>({...c,threshold:parseInt(v)||0}))} type="number" placeholder="50000"/>
-            <PBtn small onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");}}>저장</PBtn>
+            <PBtn small onClick={async()=>{
+  if(!cfg.email){ping("이메일을 먼저 입력해주세요",true);return;}
+  const{data:{user:u}}=await supabase.auth.getUser();
+  await US.save(cfg,u.id);setNtf(false);setOpenSection(null);ping("저장됐어요");
+}}>저장</PBtn>
           </div>
         )}
       </div>
