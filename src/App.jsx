@@ -685,14 +685,13 @@ export default function App() {
   const dailyBudget = workingDaysLeft>0 ? Math.round(remaining/workingDaysLeft) : 0;
   return [
     {l:"사용 건수", v:`${thisMonthTxns.length}건`},
-    {l:"일일 사용 가능", v:workingDaysLeft>0?`${dailyBudget.toLocaleString()}원`:"-", sub:`잔여 ${workingDaysLeft}일 기준`},
+    {l:"일일 사용 가능", v:workingDaysLeft>0?`${dailyBudget.toLocaleString()}원`:"-"},
     {l:"잔여율", v:`${Math.round(100-pct)}%`},
   ];
 })().map(s=>(
   <div key={s.l} className="glass" style={{flex:1,borderRadius:16,padding:"13px 8px",textAlign:"center"}}>
     <div style={{fontSize:s.l==="일일 사용 가능"?12:15,fontWeight:800,color:"#fff"}}>{s.v}</div>
     <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:3}}>{s.l}</div>
-    {s.sub&&<div style={{fontSize:9,color:"rgba(255,255,255,.25)",marginTop:2}}>{s.sub}</div>}
   </div>
 ))}
       </div>
