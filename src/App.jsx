@@ -415,6 +415,14 @@ export default function App() {
     });
     supabase.auth.onAuthStateChange((_,session)=>setUser(session?.user||null));
   },[]);
+  
+  useEffect(()=>{
+    const onBack=()=>{
+      if(tab!=="home") setTab("home");
+    };
+    window.addEventListener("popstate",onBack);
+    return ()=>window.removeEventListener("popstate",onBack);
+  },[tab]);
 
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
   const filterLabel=monthLabel(galleryFilter);
@@ -645,31 +653,46 @@ export default function App() {
               </svg>
             </div>
           </div>
-          <div style={{background:"rgba(255,255,255,.08)",borderRadius:99,height:6,overflow:"hidden"}}>
-            <div style={{width:`${pct}%`,height:"100%",borderRadius:99,
-              background:`linear-gradient(90deg,${pc},#2DD4BF)`,
-              boxShadow:`0 0 12px ${pc}66`,transition:"width .8s ease"}}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:11,color:"rgba(255,255,255,.3)"}}>
-            <span>0원</span><span>200,000원</span>
-          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+  <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>0원</span>
+  <span style={{fontSize:12,fontWeight:700,color:pc}}>{Math.round(pct)}% 사용</span>
+  <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>200,000원</span>
+</div>
+<div style={{background:"rgba(255,255,255,.08)",borderRadius:99,height:6,overflow:"hidden"}}>
+  <div style={{width:`${pct}%`,height:"100%",borderRadius:99,
+    background:`linear-gradient(90deg,${pc},#2DD4BF)`,
+    boxShadow:`0 0 12px ${pc}66`,transition:"width .8s ease"}}/>
+</div>
         </div>
       </div>
 
       {/* Stats */}
-      <div style={{display:"flex",gap:8,padding:"10px 20px 0"}}>
-        {[
-          {l:"사용 건수",v:`${thisMonthTxns.length}건`},
-          {l:"평균 1회",v:thisMonthTxns.length?`${Math.round(used/thisMonthTxns.length).toLocaleString()}원`:"-"},
-          {l:"잔여율",v:`${Math.round(100-pct)}%`},
-        ].map(s=>(
-          <div key={s.l} className="glass" style={{flex:1,borderRadius:16,padding:"13px 8px",textAlign:"center"}}>
-            <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{s.v}</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:3}}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-
+      {(()=>{
+  const hd = new Holidays('KR');
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const lastDay = new Date(year, month+1, 0).getDate();
+  let workingDaysLeft = 0;
+  for(let d=today.getDate(); d<=lastDay; d++){
+    const date = new Date(year, month, d);
+    const dow = date.getDay();
+    const isHoliday = hd.isHoliday(date);
+    if(dow!==0 && dow!==6 && !isHoliday) workingDaysLeft++;
+  }
+  const dailyBudget = workingDaysLeft>0 ? Math.round(remaining/workingDaysLeft) : 0;
+  return [
+    {l:"사용 건수", v:`${thisMonthTxns.length}건`},
+    {l:"일일 사용 가능", v:workingDaysLeft>0?`${dailyBudget.toLocaleString()}원`:"-", sub:`잔여 ${workingDaysLeft}일 기준`},
+    {l:"잔여율", v:`${Math.round(100-pct)}%`},
+  ];
+})().map(s=>(
+  <div key={s.l} className="glass" style={{flex:1,borderRadius:16,padding:"13px 8px",textAlign:"center"}}>
+    <div style={{fontSize:s.l==="일일 사용 가능"?12:15,fontWeight:800,color:"#fff"}}>{s.v}</div>
+    <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:3}}>{s.l}</div>
+    {s.sub&&<div style={{fontSize:9,color:"rgba(255,255,255,.25)",marginTop:2}}>{s.sub}</div>}
+  </div>
+))}
       {/* Tx list */}
       <div style={{padding:"16px 20px 0"}}>
         <SHead>이번 달 내역</SHead>
@@ -885,6 +908,11 @@ export default function App() {
       </div>
     </div>
   );
+  const changeTab=(newTab)=>{
+    if(newTab!==tab) window.history.pushState({tab:newTab},"");
+    setTab(newTab);
+    setFab(false);
+  };
 
   const fabRight=`max(20px, calc((100vw - 430px) / 2 + 20px))`;
 
@@ -976,7 +1004,7 @@ export default function App() {
         </>
       )}
 
-      {!overlay&&<TabBar tab={tab} setTab={t=>{setTab(t);setFab(false);}}/>}
+      {!overlay&&<TabBar tab={tab} setTab={changeTab}/>}
       <input ref={camRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
       <input ref={galRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
     </div>
