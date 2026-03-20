@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { createClient } from '@supabase/supabase-js';
+import Holidays from 'date-holidays';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -666,7 +667,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* Stats */}
+     {/* Stats */}
+      <div style={{display:"flex",gap:8,padding:"10px 20px 0"}}>
       {(()=>{
   const hd = new Holidays('KR');
   const today = new Date();
@@ -693,6 +695,7 @@ export default function App() {
     {s.sub&&<div style={{fontSize:9,color:"rgba(255,255,255,.25)",marginTop:2}}>{s.sub}</div>}
   </div>
 ))}
+      </div>
       {/* Tx list */}
       <div style={{padding:"16px 20px 0"}}>
         <SHead>이번 달 내역</SHead>
