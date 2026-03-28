@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { createClient } from '@supabase/supabase-js';
 import Holidays from 'date-holidays';
+import JSZip from "jszip";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -503,7 +504,23 @@ export default function App() {
   const dlAll=async()=>{
     const ids=Object.keys(recs);
     if(!ids.length){ping("저장된 영수증이 없어요",true);return;}
-    for(const id of ids){dlRec(parseInt(id));await new Promise(r=>setTimeout(r,350));}
+    ping("ZIP 파일 생성 중...");
+    const zip=new JSZip();
+    for(const id of ids){
+      const tx=txns.find(t=>t.id===parseInt(id));
+      const dataUrl=recs[id];
+      // data URL → base64 추출
+      const base64=dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+      const ext=dataUrl.startsWith("data:image/png") ? "png" : "jpg";
+      const filename=`영수증_${tx?.merchant||id}.${ext}`;
+      zip.file(filename, base64, {base64:true});
+    }
+    const blob=await zip.generateAsync({type:"blob"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="영수증_전체.zip";
+    a.click();
+    URL.revokeObjectURL(a.href);
   };
 
   const bgStyle={
