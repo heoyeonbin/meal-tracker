@@ -497,30 +497,39 @@ export default function App() {
     ping("삭제됐어요");
   };
 
-  const dlRec=id=>{
+  const dlRec=async id=>{
     const tx=txns.find(t=>t.id===id);
-    const a=document.createElement("a");a.href=recs[id];a.download=`영수증_${tx?.merchant||id}.jpg`;a.click();
+    try{
+      const res=await fetch(recs[id]);
+      const blob=await res.blob();
+      const ext=blob.type.includes("png")?"png":"jpg";
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download=`영수증_${tx?.merchant||id}.${ext}`;
+      document.body.appendChild(a);a.click();
+      document.body.removeChild(a);URL.revokeObjectURL(url);
+    }catch{ping("다운로드 실패",true);}
   };
   const dlAll=async()=>{
-    const ids=Object.keys(recs);
-    if(!ids.length){ping("저장된 영수증이 없어요",true);return;}
+    const targets=filteredTxns.filter(t=>recs[t.id]);
+    if(!targets.length){ping("저장된 영수증이 없어요",true);return;}
     ping("ZIP 파일 생성 중...");
     const zip=new JSZip();
-    for(const id of ids){
-      const tx=txns.find(t=>t.id===parseInt(id));
-      const dataUrl=recs[id];
-      // data URL → base64 추출
-      const base64=dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
-      const ext=dataUrl.startsWith("data:image/png") ? "png" : "jpg";
-      const filename=`영수증_${tx?.merchant||id}.${ext}`;
-      zip.file(filename, base64, {base64:true});
+    for(const tx of targets){
+      try{
+        const res=await fetch(recs[tx.id]);
+        const blob=await res.blob();
+        const ext=blob.type.includes("png")?"png":"jpg";
+        const filename=`영수증_${tx.merchant||tx.id}.${ext}`;
+        zip.file(filename,blob);
+      }catch{/* 개별 실패 무시 */}
     }
     const blob=await zip.generateAsync({type:"blob"});
+    const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="영수증_전체.zip";
-    a.click();
-    URL.revokeObjectURL(a.href);
+    a.href=url;a.download=`영수증_${filterLabel}.zip`;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
   };
 
   const bgStyle={
