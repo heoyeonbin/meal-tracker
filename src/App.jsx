@@ -520,7 +520,7 @@ export default function App() {
         const res=await fetch(recs[tx.id]);
         const blob=await res.blob();
         const ext=blob.type.includes("png")?"png":"jpg";
-        const filename=`영수증_${tx.merchant||tx.id}.${ext}`;
+        const filename=`영수증_${tx.merchant||tx.id}_${tx.id}.${ext}`;
         zip.file(filename,blob);
       }catch{/* 개별 실패 무시 */}
     }
