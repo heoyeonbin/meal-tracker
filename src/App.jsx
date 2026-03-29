@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { createClient } from '@supabase/supabase-js';
 import Holidays from 'date-holidays';
@@ -97,30 +97,47 @@ if (!document.querySelector("#css3")) {
 const LIMIT = 200_000;
 const mKey = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
 const monthLabel = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}년 ${d.getMonth()+1}월`; };
-const todayMD = () => { const d=new Date(); return `${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`; };
+const pad2 = v => String(v).padStart(2,"0");
+const todayYMD = () => { const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
 const pctColor = p => p>=90?"#EF4444":p>=70?"#F59E0B":"#10B981";
 
+const isYMD = (dateStr="") => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+const isMD = (dateStr="") => /^\d{2}\/\d{2}$/.test(dateStr);
+const parseTxnDate = (dateStr, referenceDate = new Date()) => {
+  if (!dateStr) return null;
+  if (isYMD(dateStr)) {
+    const [yyyy, mm, dd] = dateStr.split("-").map(Number);
+    return new Date(yyyy, mm - 1, dd);
+  }
+  if (isMD(dateStr)) {
+    const [mm, dd] = dateStr.split("/").map(Number);
+    let year = referenceDate.getFullYear();
+    if (mm > referenceDate.getMonth() + 1) year -= 1;
+    return new Date(year, mm - 1, dd);
+  }
+  return null;
+};
+const normalizeTxnDate = (dateStr, referenceDate = new Date()) => {
+  const parsed = parseTxnDate(dateStr, referenceDate);
+  if (!parsed) return "";
+  return `${parsed.getFullYear()}-${pad2(parsed.getMonth()+1)}-${pad2(parsed.getDate())}`;
+};
+const formatStoredDate = (dateStr, referenceDate = new Date()) => {
+  const normalized = normalizeTxnDate(dateStr, referenceDate);
+  return normalized || dateStr;
+};
+const getTxnSortTime = (dateStr, referenceDate = new Date()) => parseTxnDate(dateStr, referenceDate)?.getTime() || 0;
+const sameTxnDate = (left, right, referenceDate = new Date()) => normalizeTxnDate(left, referenceDate) === normalizeTxnDate(right, referenceDate);
+
 const formatDateHeader = (dateStr) => {
-  if (!dateStr) return dateStr;
-  const [mm, dd] = dateStr.split("/");
-  const d = new Date(new Date().getFullYear(), parseInt(mm)-1, parseInt(dd));
+  const d = parseTxnDate(dateStr);
+  if (!d) return dateStr;
   const days = ["일","월","화","수","목","금","토"];
-  return `${parseInt(mm)}월 ${parseInt(dd)}일 (${days[d.getDay()]})`;
+  return `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
 };
 
-// MM/DD ↔ YYYY-MM-DD
-const toYMD = (mmdd) => {
-  if (!mmdd) return "";
-  const [mm, dd] = mmdd.split("/");
-  if (!mm || !dd) return "";
-  return `${new Date().getFullYear()}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
-};
-const fromYMD = (ymd) => {
-  if (!ymd) return "";
-  const p = ymd.split("-");
-  if (p.length < 3) return "";
-  return `${p[1]}/${p[2]}`;
-};
+const toYMD = (dateStr) => normalizeTxnDate(dateStr);
+const fromYMD = (ymd) => normalizeTxnDate(ymd);
 
 /* ── Storage & DB ── */
 const S = {
@@ -133,6 +150,16 @@ const GS = {
     if (!user) return [];
     const { data } = await supabase.from("transactions").select("*").eq("user_id",user.id).order("created_at",{ascending:false});
     return data||[];
+  },
+  migrateDates: async rows => {
+    const updates = rows
+      .filter(r => r?.date && !isYMD(r.date))
+      .map(async r => {
+        const normalized = normalizeTxnDate(r.date);
+        if (!normalized || normalized === r.date) return;
+        await supabase.from("transactions").update({ date: normalized }).eq("id", r.id);
+      });
+    await Promise.all(updates);
   },
   add: async tx => {
     const { data:{ user } } = await supabase.auth.getUser();
@@ -353,14 +380,17 @@ function CalendarView({txns, onDayPress, monthDate, selectedDate}) {
 
   const dayTotals={};
   txns.forEach(tx=>{
-    if(!tx.date) return;
-    const [mm,dd]=tx.date.split("/");
-    if(parseInt(mm)===month+1){ const day=parseInt(dd); dayTotals[day]=(dayTotals[day]||0)+tx.amount; }
+    const txDate = parseTxnDate(tx.date, monthDate);
+    if(!txDate) return;
+    if(txDate.getFullYear()===year && txDate.getMonth()===month){
+      const day=txDate.getDate();
+      dayTotals[day]=(dayTotals[day]||0)+tx.amount;
+    }
   });
 
   const hasTx=(day)=>!!dayTotals[day];
   const isToday=(day)=>day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
-  const isSelected=(day)=>selectedDate===`${String(month+1).padStart(2,"0")}/${String(day).padStart(2,"0")}`;
+  const isSelected=(day)=>selectedDate===`${year}-${pad2(month+1)}-${pad2(day)}`;
 
   const cells=[];
   for(let i=0;i<firstDay;i++) cells.push(null);
@@ -376,7 +406,7 @@ function CalendarView({txns, onDayPress, monthDate, selectedDate}) {
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",rowGap:14}}>
         {cells.map((day,i)=>(
           <div key={i} style={{minHeight:52,textAlign:"center",cursor:day&&hasTx(day)?"pointer":"default"}}
-            onClick={()=>day&&hasTx(day)&&onDayPress(`${String(month+1).padStart(2,"0")}/${String(day).padStart(2,"0")}`)}>
+            onClick={()=>day&&hasTx(day)&&onDayPress(`${year}-${pad2(month+1)}-${pad2(day)}`)}>
             {day&&(
               <>
                 <div style={{
@@ -402,39 +432,39 @@ function CalendarView({txns, onDayPress, monthDate, selectedDate}) {
 
 /* ── Calendar Day Bottom Sheet ── */
 function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
-  const dayTxns = txns.filter(tx=>tx.date===dateKey);
+  const dayTxns = txns.filter(tx=>sameTxnDate(tx.date, dateKey));
   const total = dayTxns.reduce((s,t)=>s+t.amount,0);
   return (
     <>
       <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.38)",zIndex:200,backdropFilter:"blur(8px)"}}/>
       <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",zIndex:201,
-        borderRadius:"24px 24px 0 0",padding:"12px 20px",
+        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.76), rgba(243,247,255,.60))",zIndex:201,
+        borderRadius:"28px 28px 0 0",padding:"12px 20px 20px",
         paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -18px 40px rgba(99,102,241,.10)"}}>
-        <div style={{width:36,height:4,borderRadius:99,background:"rgba(148,163,184,.45)",margin:"0 auto 20px"}}/>
-        <div style={{fontSize:18,fontWeight:700,color:"#1e1b4b",marginBottom:8}}>{formatDateHeader(dateKey)}</div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:16,paddingBottom:12,borderBottom:"1px solid rgba(241,245,249,.75)"}}>
+        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -12px 34px rgba(148,163,184,.16)"}}>
+        <div style={{width:40,height:5,borderRadius:99,background:"rgba(148,163,184,.38)",margin:"0 auto 18px"}}/>
+        <div style={{fontSize:17,fontWeight:700,color:"#1e1b4b",marginBottom:10}}>{formatDateHeader(dateKey)}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:18,paddingBottom:14,borderBottom:"1px solid rgba(226,232,240,.72)"}}>
           <span style={{fontSize:13,color:"#94A3B8"}}>{dayTxns.length}건</span>
-          <span style={{fontSize:15,fontWeight:700,color:"#EF4444"}}>₩{total.toLocaleString()}</span>
+          <span style={{fontSize:16,fontWeight:700,color:"#6366F1"}}>₩{total.toLocaleString()}</span>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:20}}>
           {dayTxns.map((tx,i)=>(
             <button key={tx.id} onClick={()=>{onEdit(tx);onClose();}}
               style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"14px 0",borderBottom:i<dayTxns.length-1?"1px solid rgba(248,250,252,.8)":"none",
+                padding:"15px 0",borderBottom:i<dayTxns.length-1?"1px solid rgba(241,245,249,.9)":"none",
                 background:"none",border:"none",cursor:"pointer",width:"100%",fontFamily:"inherit",
                 borderRadius:0}}>
               <span style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>{tx.merchant}</span>
-              <span style={{fontSize:14,fontWeight:600,color:"#1A1A2E"}}>₩{tx.amount.toLocaleString()}</span>
+              <span style={{fontSize:14,fontWeight:600,color:"#334155"}}>₩{tx.amount.toLocaleString()}</span>
             </button>
           ))}
         </div>
         <button className="btn-press" onClick={onClose} style={{
-          width:"100%",padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
+          width:"100%",padding:"15px",borderRadius:18,border:"1px solid rgba(255,255,255,.88)",cursor:"pointer",
           background:"linear-gradient(150deg,#8B93FF,#6366F1)",color:"#fff",
           fontSize:15,fontWeight:700,fontFamily:"inherit",
-          boxShadow:"0 16px 34px rgba(99,102,241,.28)"}}>
+          boxShadow:"0 14px 28px rgba(99,102,241,.22)"}}>
           확인
         </button>
       </div>
@@ -575,8 +605,16 @@ export default function App() {
       if(user){
         Promise.all([GS.load(),US.load()]).then(([rows,settings])=>{
           if(rows.length){
-            setTxns(rows.map(r=>({id:Number(r.id),amount:Number(r.amount),merchant:r.merchant,date:r.date,image_url:r.image_url||null})));
+            const normalizedRows = rows.map(r=>({
+              id:Number(r.id),
+              amount:Number(r.amount),
+              merchant:r.merchant,
+              date:normalizeTxnDate(r.date,currentServerMonthDate) || r.date,
+              image_url:r.image_url||null
+            }));
+            setTxns(normalizedRows);
             const rd={};rows.forEach(r=>{if(r.image_url) rd[Number(r.id)]=r.image_url;});setRecs(rd);
+            GS.migrateDates(rows).catch(()=>{});
           }
           if(settings) setCfg({projectName:settings.project_name||"",email:settings.email||"",threshold:settings.threshold||50000});
         });
@@ -608,28 +646,24 @@ export default function App() {
   const currentServerDate=new Date();
   const currentServerMonthDate=new Date(currentServerDate.getFullYear(),currentServerDate.getMonth(),1);
   const getDisplayMonthDate=(offset=0)=>new Date(currentServerMonthDate.getFullYear(),currentServerMonthDate.getMonth()-offset,1);
-  const toWindowedDate=(dateStr)=>{
-    if(!dateStr) return null;
-    const [mm,dd]=dateStr.split("/").map(Number);
-    if(!mm||!dd) return null;
-    let year=currentServerMonthDate.getFullYear();
-    if(mm>currentServerMonthDate.getMonth()+1) year-=1;
-    return new Date(year,mm-1,dd);
-  };
+  const toWindowedDate=(dateStr)=>parseTxnDate(dateStr,currentServerMonthDate);
   const filterLabel=monthLabel(galleryFilter);
   const homeMonthDate=getDisplayMonthDate(homeMonthOffset);
   const homeMonthLabel=`${homeMonthDate.getFullYear()}년 ${homeMonthDate.getMonth()+1}월`;
   const canGoPrevHomeMonth=homeMonthOffset<2;
   const canGoNextHomeMonth=homeMonthOffset>0;
+  const canGoPrevGalleryMonth=galleryFilter<2;
+  const canGoNextGalleryMonth=galleryFilter>0;
+  const filteredMonthDate=getDisplayMonthDate(galleryFilter);
   const filteredTxns=txns.filter(tx=>{
-    if(!tx.date) return galleryFilter===0;
-    const [mm]=tx.date.split("/");
-    const d=new Date(); d.setMonth(d.getMonth()-galleryFilter);
-    return parseInt(mm)===d.getMonth()+1;
-  }).sort((a,b)=>{const[am,ad]=(a.date||"").split("/");const[bm,bd]=(b.date||"").split("/");return(parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
+    const txDate=toWindowedDate(tx.date);
+    return txDate && txDate.getFullYear()===filteredMonthDate.getFullYear() && txDate.getMonth()===filteredMonthDate.getMonth();
+  }).sort((a,b)=>getTxnSortTime(b.date,currentServerMonthDate)-getTxnSortTime(a.date,currentServerMonthDate));
 
-  const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;})
-    .sort((a,b)=>{const[am,ad]=(a.date||"").split("/");const[bm,bd]=(b.date||"").split("/");return(parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
+  const thisMonthTxns=txns.filter(t=>{
+    const txDate=toWindowedDate(t.date);
+    return txDate && txDate.getFullYear()===currentServerMonthDate.getFullYear() && txDate.getMonth()===currentServerMonthDate.getMonth();
+  }).sort((a,b)=>getTxnSortTime(b.date,currentServerMonthDate)-getTxnSortTime(a.date,currentServerMonthDate));
   const homeMonthTxns=txns.filter(tx=>{
     const txDate=toWindowedDate(tx.date);
     return txDate && txDate.getFullYear()===homeMonthDate.getFullYear() && txDate.getMonth()===homeMonthDate.getMonth();
@@ -641,7 +675,11 @@ export default function App() {
 
   // Date-grouped for home list
   const groupedTxns={};
-  homeMonthTxns.forEach(tx=>{const k=tx.date||"미상";if(!groupedTxns[k])groupedTxns[k]=[];groupedTxns[k].push(tx);});
+  homeMonthTxns.forEach(tx=>{
+    const k=normalizeTxnDate(tx.date,currentServerMonthDate)||"미상";
+    if(!groupedTxns[k])groupedTxns[k]=[];
+    groupedTxns[k].push(tx);
+  });
   const sortedDateKeys=Object.keys(groupedTxns).sort((a,b)=>(toWindowedDate(b)?.getTime()||0)-(toWindowedDate(a)?.getTime()||0));
 
   const getDailyBudget=()=>{
@@ -666,7 +704,7 @@ export default function App() {
   const openEdit=(tx)=>{
     pushOverlayHistory();
     setEditTarget(tx);
-    setForm({amount:String(tx.amount),merchant:tx.merchant||"",date:tx.date||""});
+    setForm({amount:String(tx.amount),merchant:tx.merchant||"",date:normalizeTxnDate(tx.date,currentServerMonthDate)||todayYMD()});
     setPv(recs[tx.id]||null);
     setOvSrc("edit");
     setOv("form");
@@ -682,8 +720,8 @@ export default function App() {
       const url=e.target.result; setPv(url); setOv("loading"); setOvSrc(src);
       try{
         const data=await ocr(url.split(",")[1],file.type||"image/jpeg"); setOcr(data);
-        setForm({amount:data.amount?String(data.amount):"",merchant:data.merchant!=="알 수 없음"?data.merchant:"",date:data.date||todayMD()});
-      }catch{setOcr({amount:null,merchant:"알 수 없음",date:null});setForm(f=>({...f,date:todayMD()}));}
+        setForm({amount:data.amount?String(data.amount):"",merchant:data.merchant!=="알 수 없음"?data.merchant:"",date:normalizeTxnDate(data.date,currentServerMonthDate)||todayYMD()});
+      }catch{setOcr({amount:null,merchant:"알 수 없음",date:null});setForm(f=>({...f,date:todayYMD()}));}
       setOv("form");
     };
     reader.readAsDataURL(file);
@@ -694,11 +732,11 @@ export default function App() {
     if(!amt||amt<=0){ping("금액을 입력해주세요",true);return;}
 
     if(overlaySource==="edit"&&editTarget){
-      await saveTx({...editTarget,amount:amt,merchant:form.merchant||editTarget.merchant,date:form.date||editTarget.date});
+      await saveTx({...editTarget,amount:amt,merchant:form.merchant||editTarget.merchant,date:normalizeTxnDate(form.date,currentServerMonthDate)||normalizeTxnDate(editTarget.date,currentServerMonthDate)||todayYMD()});
       closeOv();
     } else {
       const id=Date.now();
-      const tx={id,amount:amt,merchant:form.merchant||"식당",date:form.date||todayMD(),image_url:null};
+      const tx={id,amount:amt,merchant:form.merchant||"식당",date:normalizeTxnDate(form.date,currentServerMonthDate)||todayYMD(),image_url:null};
       setTxns(prev=>[tx,...prev]);
       if(preview&&overlaySource!=="manual"){
         const{data:{user:u}}=await supabase.auth.getUser();
@@ -866,49 +904,48 @@ export default function App() {
     return (
       <div style={{position:"relative",zIndex:1,padding:"52px 20px 0"}}>
         {/* Month nav */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:2}}>
-          <button className="btn-press" onClick={()=>setGalleryFilter(f=>f+1)} style={{
-            background:"none",border:"none",cursor:"pointer",width:36,height:36,borderRadius:"50%",
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#64748B",fontSize:22,fontWeight:700}}>‹</button>
-          <div style={{fontSize:20,fontWeight:800,color:"#1e1b4b",letterSpacing:"-0.5px"}}>{filterLabel}</div>
-          <button className="btn-press" onClick={()=>setGalleryFilter(f=>Math.max(0,f-1))} style={{
-            background:"none",border:"none",cursor:"pointer",width:36,height:36,borderRadius:"50%",
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#64748B",fontSize:22,fontWeight:700,
-            opacity:galleryFilter===0?.3:1}}>›</button>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 12px",marginBottom:4}}>
+          <button className="btn-press" onClick={()=>canGoPrevGalleryMonth&&setGalleryFilter(f=>Math.min(2,f+1))} disabled={!canGoPrevGalleryMonth} style={{
+            background:"none",border:"none",cursor:canGoPrevGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
+            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoPrevGalleryMonth?1:.32}}>‹</button>
+          <div style={{fontSize:16,fontWeight:700,color:"#1A1A2E"}}>{filterLabel}</div>
+          <button className="btn-press" onClick={()=>canGoNextGalleryMonth&&setGalleryFilter(f=>Math.max(0,f-1))} disabled={!canGoNextGalleryMonth} style={{
+            background:"none",border:"none",cursor:canGoNextGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
+            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoNextGalleryMonth?1:.32}}>›</button>
         </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-          <div style={{fontSize:12,color:"#94A3B8"}}>이번 달 사용 금액 -₩{totalAmt.toLocaleString()}</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,padding:"0 2px"}}>
+          <div style={{fontSize:12,color:"#94A3B8"}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
           {galleryTxns.length>0&&(
             <button onClick={dlAll} className="btn-press" style={{
-              display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:99,
-              background:"transparent",border:"1.5px solid #6366F1",color:"#6366F1",
-              fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+              display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:999,
+              background:"rgba(255,255,255,.48)",border:"1px solid rgba(255,255,255,.9)",color:"#6366F1",
+              fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 10px 24px rgba(148,163,184,.10)",backdropFilter:"blur(14px)"}}>
               <IcDownload/>전체 다운로드
             </button>
           )}
         </div>
 
         {galleryTxns.length>0?(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,paddingBottom:8}}>
             {galleryTxns.map(tx=>(
-              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",position:"relative",boxShadow:"0 16px 34px rgba(148,163,184,.14)",border:"1px solid rgba(255,255,255,.86)"}}>
+              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.50))",borderRadius:20,overflow:"hidden",position:"relative",boxShadow:"0 14px 28px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.82)"}}>
                 <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
                   style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",cursor:"pointer"}}/>
                 <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
-                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
-                  background:"rgba(255,255,255,.82)",border:"1px solid rgba(255,255,255,.92)",
+                  position:"absolute",top:10,right:10,width:30,height:30,borderRadius:"50%",
+                  background:"rgba(255,255,255,.72)",border:"1px solid rgba(255,255,255,.92)",
                   color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 12px 20px rgba(148,163,184,.14)"}}>···</button>
-                <div style={{padding:"10px 12px"}}>
-                  <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
-                  <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:2}}>₩{tx.amount.toLocaleString()}</div>
-                  <div style={{fontSize:11,color:"#94A3B8",marginTop:1}}>{tx.date}</div>
+                  justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 10px 18px rgba(148,163,184,.12)",backdropFilter:"blur(12px)"}}>···</button>
+                <div style={{padding:"12px 12px 13px"}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{tx.merchant}</div>
+                  <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:4}}>₩{tx.amount.toLocaleString()}</div>
+                  <div style={{fontSize:11,color:"#94A3B8",marginTop:3}}>{formatStoredDate(tx.date,currentServerMonthDate)}</div>
                 </div>
               </div>
             ))}
           </div>
         ):(
-          <div style={{textAlign:"center",padding:"60px 0",color:"#94A3B8"}}>
+          <div style={{textAlign:"center",padding:"64px 0",color:"#94A3B8"}}>
             <div style={{fontSize:14,fontWeight:500}}>저장된 영수증이 없어요</div>
           </div>
         )}
@@ -1027,7 +1064,7 @@ export default function App() {
               {[
                 {Icon:IcCamera,label:"영수증 촬영",fn:()=>camRef.current?.click()},
                 {Icon:IcImage,label:"사진 업로드",fn:()=>galRef.current?.click()},
-                {Icon:IcPencil,label:"직접 등록",fn:()=>{pushOverlayHistory();setForm({amount:"",merchant:"",date:todayMD()});setOvSrc("manual");setOv("form");setFab(false);}},
+                {Icon:IcPencil,label:"직접 등록",fn:()=>{pushOverlayHistory();setForm({amount:"",merchant:"",date:todayYMD()});setOvSrc("manual");setOv("form");setFab(false);}},
               ].map((opt,i)=>(
                 <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press glass-soft" style={{
                   display:"flex",alignItems:"center",gap:10,background:"linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72))",
