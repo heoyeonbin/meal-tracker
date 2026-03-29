@@ -19,7 +19,7 @@ if (!document.querySelector("#css3")) {
   const s = document.createElement("style"); s.id = "css3";
   s.textContent = `
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html,body{
+    html,body,#root{
       background:
         radial-gradient(circle at top left, rgba(255,255,255,.78), transparent 26%),
         linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%);
@@ -29,13 +29,26 @@ if (!document.querySelector("#css3")) {
     button{transition:transform .18s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease}
     input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     input[type=date]{
+      appearance:none;
+      -webkit-appearance:none;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E");
       background-repeat:no-repeat;
       background-position:right 14px center;
       background-size:18px;
       padding-right:44px!important;
     }
-    input[type=date]::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer}
+    input[type=date]::-webkit-inner-spin-button{display:none}
+    input[type=date]::-webkit-clear-button{display:none}
+    input[type=date]::-webkit-calendar-picker-indicator{
+      opacity:0;
+      cursor:pointer;
+      position:absolute;
+      right:14px;
+      width:18px;
+      height:18px;
+      margin:0;
+    }
+    input[type=date]::-ms-expand{display:none}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -443,8 +456,8 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
   const showsImageArea = source==="camera" || source==="gallery" || (source==="edit" && !!preview);
   const headerButtonStyle = isManualForm
     ? {
-        width:36,height:36,borderRadius:10,background:"rgba(255,255,255,.38)",border:"1px solid rgba(255,255,255,.82)",
-        boxShadow:"0 10px 22px rgba(148,163,184,.12)"
+        width:36,height:36,borderRadius:10,background:"transparent",border:"none",
+        boxShadow:"none"
       }
     : {
         width:24,height:24,borderRadius:0,background:"transparent",border:"none",boxShadow:"none"
@@ -460,8 +473,8 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
       };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
-      zIndex:300,maxWidth:430,margin:"0 auto",overflowY:"auto",paddingBottom:100}}>
+    <div style={{position:"fixed",inset:0,width:"100vw",minHeight:"100dvh",background:"radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
+      zIndex:300,maxWidth:430,margin:"0 auto",overflowY:"auto",paddingBottom:100,backgroundRepeat:"no-repeat",backgroundAttachment:"fixed"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,padding:`${isManualForm?52:58}px 20px 16px`}}>
         <button className="btn-press" onClick={()=>window.history.back()} style={{
           ...headerButtonStyle,
