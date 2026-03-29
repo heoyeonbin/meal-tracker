@@ -1,5 +1,6 @@
 import Holidays from "date-holidays";
 import { formatDateHeader, formatStoredDate, pad2, parseTxnDate, pctColor, sameTxnDate } from "../utils/date";
+import { brand, glassPanelBackground, textMuted, textPrimary, textSecondary } from "../styles/theme";
 
 function CalendarView({ txns, onDayPress, monthDate, selectedDate }) {
   const year = monthDate.getFullYear();
@@ -50,11 +51,11 @@ function CalendarView({ txns, onDayPress, monthDate, selectedDate }) {
                     height: 30,
                     borderRadius: "50%",
                     margin: "0 auto",
-                    background: isToday(day) ? "#6366F1" : isSelected(day) ? "rgba(99,102,241,.12)" : "transparent",
+                    background: isToday(day) ? brand : isSelected(day) ? "rgba(99,102,241,.12)" : "transparent",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: isToday(day) ? "#fff" : "#1A1A2E",
+                    color: isToday(day) ? "#fff" : textSecondary,
                     fontSize: 13,
                     fontWeight: 500,
                   }}
@@ -63,7 +64,7 @@ function CalendarView({ txns, onDayPress, monthDate, selectedDate }) {
                 </div>
                 <div style={{ height: 16, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", marginTop: 2 }}>
                   {hasTx(day) && (
-                    <span style={{ fontSize: 9, color: "#6366F1", fontWeight: 500, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 9, color: brand, fontWeight: 500, whiteSpace: "nowrap" }}>
                       ₩{dayTotals[day].toLocaleString()}
                     </span>
                   )}
@@ -105,7 +106,7 @@ export function CalendarDaySheet({ dateKey, txns, onClose, onEdit }) {
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 600, color: "#64748B", marginBottom: 6, marginTop: 4 }}>{formatDateHeader(dateKey)}</div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: "#1A1A2E", letterSpacing: "-.8px", marginBottom: 18 }}>₩{total.toLocaleString()}</div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: textSecondary, letterSpacing: "-.8px", marginBottom: 18 }}>₩{total.toLocaleString()}</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <span style={{ fontSize: 13, color: "#94A3B8", fontWeight: 600 }}>사용 내역</span>
           <span style={{ fontSize: 13, color: "#94A3B8" }}>{dayTxns.length}건</span>
@@ -132,7 +133,7 @@ export function CalendarDaySheet({ dateKey, txns, onClose, onEdit }) {
                 borderRadius: 0,
               }}
             >
-              <span style={{ fontSize: 15, fontWeight: 600, color: "#1e1b4b" }}>{tx.merchant}</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: textPrimary }}>{tx.merchant}</span>
               <span style={{ fontSize: 14, fontWeight: 700, color: "#475569" }}>₩{tx.amount.toLocaleString()}</span>
             </button>
           ))}
@@ -216,13 +217,13 @@ export default function HomeScreen({
   return (
     <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ padding: "52px 20px 0" }}>
-        <div className="glass-panel" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58))", borderRadius: 24, padding: "22px", boxShadow: "0 18px 40px rgba(99,102,241,.12)", marginBottom: 14 }}>
+        <div className="glass-panel" style={{ background: glassPanelBackground, borderRadius: 24, padding: "22px", boxShadow: "0 18px 40px rgba(99,102,241,.12)", marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "stretch", justifyContent: "space-between", gap: 16 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: "#94A3B8", marginBottom: 4, fontWeight: 500 }}>이번 달 잔액</div>
-              <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: "-1.5px", color: "#1e1b4b", lineHeight: 1.1, marginBottom: 6 }}>₩{remaining.toLocaleString()}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: textMuted, marginBottom: 4, fontWeight: 500 }}>이번 달 잔액</div>
+                <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: "-1.5px", color: textPrimary, lineHeight: 1.1, marginBottom: 6 }}>₩{remaining.toLocaleString()}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 2 }}>
-                <div style={{ alignSelf: "flex-start", background: "#EEF2FF", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 600, color: "#6366F1", whiteSpace: "nowrap" }}>
+                  <div style={{ alignSelf: "flex-start", background: "#EEF2FF", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 600, color: brand, whiteSpace: "nowrap" }}>
                   일일 사용 가능 금액 ₩{dailyBudget.toLocaleString()}
                 </div>
                 <div style={{ alignSelf: "flex-start", background: pct >= 90 ? "#FEF2F2" : pct >= 70 ? "#FFFBEB" : "#F0FDF4", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 600, color: pc }}>
@@ -264,7 +265,7 @@ export default function HomeScreen({
           <button className="btn-press" onClick={onPrevMonth} disabled={!canGoPrevHomeMonth} style={{ ...homeMonthNavBtn, opacity: canGoPrevHomeMonth ? 1 : 0.32, cursor: canGoPrevHomeMonth ? "pointer" : "default" }}>
             ‹
           </button>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A2E" }}>{homeMonthLabel}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: textSecondary }}>{homeMonthLabel}</div>
           <button className="btn-press" onClick={onNextMonth} disabled={!canGoNextHomeMonth} style={{ ...homeMonthNavBtn, opacity: canGoNextHomeMonth ? 1 : 0.32, cursor: canGoNextHomeMonth ? "pointer" : "default" }}>
             ›
           </button>

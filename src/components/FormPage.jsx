@@ -1,4 +1,5 @@
 import { fromYMD, toYMD } from "../utils/date";
+import { brandGradient, formBackground, glassPanelBackground, textPrimary } from "../styles/theme";
 
 const FormInput = ({ label, value, onChange, type = "text", placeholder }) => (
   <div style={{ marginBottom: 12 }}>
@@ -20,7 +21,7 @@ const FormInput = ({ label, value, onChange, type = "text", placeholder }) => (
         borderRadius: 10,
         padding: "13px 14px",
         fontSize: 15,
-        color: "#1e1b4b",
+        color: textPrimary,
         outline: "none",
         transition: "border-color .15s, box-shadow .15s",
         fontFamily: "inherit",
@@ -58,7 +59,7 @@ const FixedConfirmBtn = ({ onClick, label = "확인" }) => (
         border: "none",
         color: "#fff",
         fontFamily: "inherit",
-        background: "linear-gradient(90deg,#818CF8,#6366F1)",
+        background: brandGradient,
         boxShadow: "0 12px 28px rgba(99,102,241,.28)",
       }}
     >
@@ -84,7 +85,7 @@ export default function FormPage({ source, preview, ocrRes, form, setForm, onSub
     : { width: 24, height: 24, borderRadius: 0, background: "transparent", border: "none", boxShadow: "none" };
   const formCardStyle = {
     margin: "0 20px",
-    background: "linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",
+    background: glassPanelBackground,
     borderRadius: 16,
     padding: "20px",
     boxShadow: isManualForm ? "0 12px 30px rgba(148,163,184,.12)" : "0 16px 34px rgba(148,163,184,.12)",
@@ -98,8 +99,7 @@ export default function FormPage({ source, preview, ocrRes, form, setForm, onSub
         inset: 0,
         width: "100vw",
         minHeight: "100dvh",
-        background:
-          "radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
+        background: formBackground,
         zIndex: 300,
         maxWidth: "none",
         margin: 0,
@@ -119,7 +119,7 @@ export default function FormPage({ source, preview, ocrRes, form, setForm, onSub
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <div style={{ fontSize: isManualForm ? 17 : 18, fontWeight: 700, color: "#1A1A2E", lineHeight: 1 }}>{title}</div>
+        <div style={{ fontSize: isManualForm ? 17 : 18, fontWeight: 700, color: textPrimary, lineHeight: 1 }}>{title}</div>
       </div>
 
       {showsImageArea && (

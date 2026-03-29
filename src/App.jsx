@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
+import "./App.css";
 import blobCharacterImg from "./assets/blob-character.png";
 import { supabase, GS, US, compress, uploadReceipt } from "./services/supabase";
 import { ocr } from "./services/ocr";
@@ -10,14 +11,15 @@ import FormPage from "./components/FormPage";
 import HomeScreen, { CalendarDaySheet } from "./screens/HomeScreen";
 import GalleryScreen, { GalleryBottomSheet } from "./screens/GalleryScreen";
 import SettingsScreen from "./screens/SettingsScreen";
+import { appBackground, brandGradient, glassPanelStrongBackground, textPrimary, textMuted } from "./styles/theme";
 
-if (!document.querySelector("#gf3")) {
+if (false && !document.querySelector("#gf3")) {
   const l = document.createElement("link"); l.id = "gf3";
   l.rel = "stylesheet";
   l.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap";
   document.head.appendChild(l);
 }
-if (!document.querySelector("#css3")) {
+if (false && !document.querySelector("#css3")) {
   const s = document.createElement("style"); s.id = "css3";
   s.textContent = `
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -393,18 +395,18 @@ export default function App() {
     const a=document.createElement("a");a.href=url;a.download=`영수증_${filterLabel}.zip`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   };
 
-  const bgStyle={minHeight:"100vh",background:"radial-gradient(circle at top left, rgba(255,255,255,.82), transparent 26%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",color:"#1e1b4b",fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:120,position:"relative",overflowX:"hidden"};
+  const bgStyle={minHeight:"100vh",background:appBackground,color:textPrimary,fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:120,position:"relative",overflowX:"hidden"};
 
   /* ── LOGIN ── */
   if(!user) return (
     <div style={{...bgStyle,display:"flex",flexDirection:"column",paddingBottom:0,minHeight:"100dvh"}}>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"36px 20px 18px",textAlign:"center"}}>
         <CardSVG width={132} height={124}/>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:"#1e1b4b",marginTop:18,marginBottom:8}}>Welcome Back</div>
-        <div style={{fontSize:14,color:"#94A3B8"}}>Sign in with your Google account</div>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:textPrimary,marginTop:18,marginBottom:8}}>Welcome Back</div>
+        <div style={{fontSize:14,color:textMuted}}>Sign in with your Google account</div>
       </div>
       <div style={{padding:"0 24px calc(40px + env(safe-area-inset-bottom,0px)) 24px"}}>
-        <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",backdropFilter:"blur(22px)",borderRadius:24,padding:"36px 28px",border:"1px solid rgba(255,255,255,0.95)",boxShadow:"0 20px 44px rgba(99,102,241,0.12)"}}>
+        <div className="glass-panel" style={{background:glassPanelStrongBackground,backdropFilter:"blur(22px)",borderRadius:24,padding:"36px 28px",border:"1px solid rgba(255,255,255,0.95)",boxShadow:"0 20px 44px rgba(99,102,241,0.12)"}}>
         <div style={{fontSize:18,fontWeight:600,color:"#334155",marginBottom:24,textAlign:"center"}}>Sign in to get started</div>
         <button className="btn-press"
           onClick={()=>supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}})}
@@ -531,10 +533,10 @@ export default function App() {
                 <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press glass-soft" style={{
                   display:"flex",alignItems:"center",gap:10,background:"linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72))",
                   border:"1px solid rgba(255,255,255,.94)",borderRadius:99,padding:"10px 16px 10px 10px",
-                  fontSize:13,fontWeight:600,color:"#1e1b4b",cursor:"pointer",
+                  fontSize:13,fontWeight:600,color:textPrimary,cursor:"pointer",
                   boxShadow:"0 18px 34px rgba(99,102,241,.14)",fontFamily:"inherit",
                   animation:"fabPop .18s ease both",animationDelay:`${i*.05}s`,whiteSpace:"nowrap"}}>
-                  <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(150deg,#8B93FF,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 10px 18px rgba(99,102,241,.22)"}}>
+                  <div style={{width:34,height:34,borderRadius:"50%",background:brandGradient,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 10px 18px rgba(99,102,241,.22)"}}>
                     <opt.Icon/>
                   </div>
                   {opt.label}
@@ -544,7 +546,7 @@ export default function App() {
           )}
           <div style={{position:"fixed",bottom:108,right:fabRight,zIndex:80}}>
             <button className="btn-press" onClick={()=>setFab(p=>!p)} style={{
-              width:56,height:56,borderRadius:"50%",background:"linear-gradient(150deg,#8B93FF,#6366F1)",
+              width:56,height:56,borderRadius:"50%",background:brandGradient,
               border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
               boxShadow:"0 18px 38px rgba(99,102,241,.34)",transition:"transform .25s",
               transform:fabOpen?"rotate(45deg)":"rotate(0deg)",color:"#fff"}}>
