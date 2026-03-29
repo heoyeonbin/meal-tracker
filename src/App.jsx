@@ -178,17 +178,17 @@ const IcDownload = () => (
 );
 
 const IconHome = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={active?"#6366F1":"none"} stroke={active?"#6366F1":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9" fill="none" stroke={active?"white":"#94A3B8"}/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"white":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
   </svg>
 );
 const IconGallery = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#6366F1":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill={active?"#EEF2FF":"none"}/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"white":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill={active?"white":"#94A3B8"} stroke="none"/><path d="M21 15l-5-5L5 21"/>
   </svg>
 );
 const IconSettings = ({active}) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"#6366F1":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?"white":"#94A3B8"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
   </svg>
 );
@@ -236,17 +236,25 @@ const FormInput = ({label,value,onChange,type="text",placeholder}) => (
 /* ── Tab Bar ── */
 const TabBar = ({tab,setTab}) => (
   <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
-    display:"flex",zIndex:100,background:"#FFFFFF",borderTop:"1px solid #F1F5F9",
-    paddingBottom:"env(safe-area-inset-bottom,6px)"}}>
-    {[{id:"home",label:"홈",Icon:IconHome},{id:"gallery",label:"갤러리",Icon:IconGallery},{id:"settings",label:"설정",Icon:IconSettings}]
-      .map(({id,label,Icon})=>(
-      <button key={id} className="btn-press" onClick={()=>setTab(id)} style={{
-        flex:1,background:"none",border:"none",cursor:"pointer",
-        padding:"10px 0 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-        <Icon active={tab===id}/>
-        <span style={{fontSize:10,fontWeight:tab===id?700:400,color:tab===id?"#6366F1":"#94A3B8",transition:"color .15s"}}>{label}</span>
-      </button>
-    ))}
+    zIndex:100,padding:"12px 21px calc(21px + env(safe-area-inset-bottom,0px)) 21px"}}>
+    <div style={{display:"flex",background:"rgba(255,255,255,0.92)",backdropFilter:"blur(12px)",
+      borderRadius:36,height:62,padding:4,border:"1px solid rgba(255,255,255,0.9)",
+      boxShadow:"0 4px 24px rgba(99,102,241,.14)"}}>
+      {[{id:"home",label:"홈",Icon:IconHome},{id:"gallery",label:"갤러리",Icon:IconGallery},{id:"settings",label:"설정",Icon:IconSettings}]
+        .map(({id,label,Icon})=>{
+          const active=tab===id;
+          return (
+            <button key={id} onClick={()=>setTab(id)} style={{
+              flex:1,border:"none",cursor:"pointer",fontFamily:"inherit",
+              borderRadius:26,background:active?"#6366F1":"transparent",
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,
+              transition:"background .2s"}}>
+              <Icon active={active}/>
+              <span style={{fontSize:10,fontWeight:600,color:active?"#FFFFFF":"#94A3B8",letterSpacing:0.5,transition:"color .2s"}}>{label}</span>
+            </button>
+          );
+        })}
+    </div>
   </div>
 );
 
@@ -326,19 +334,16 @@ function CalendarView({txns, onDayPress}) {
               <>
                 <div style={{
                   width:30,height:30,borderRadius:"50%",margin:"0 auto",
-                  background:isToday(day)?"#6366F1":hasTx(day)?"#EEF2FF":"transparent",
-                  border:hasTx(day)&&!isToday(day)?"1.5px solid #C7D2FE":"none",
+                  background:isToday(day)?"#6366F1":hasTx(day)?"#E0E7FF":"transparent",
                   display:"flex",alignItems:"center",justifyContent:"center",
-                  color:isToday(day)?"#fff":i%7===0?"#EF4444":i%7===6?"#6366F1":"#1e1b4b",
-                  fontSize:13,fontWeight:isToday(day)||hasTx(day)?600:400,
+                  color:isToday(day)?"#fff":hasTx(day)?"#4F46E5":i%7===0?"#EF4444":i%7===6?"#6366F1":"#1e1b4b",
+                  fontSize:13,fontWeight:isToday(day)||hasTx(day)?700:400,
                 }}>
                   {day}
                 </div>
-                {dayTotals[day]&&(
-                  <div style={{fontSize:9,color:"#6366F1",fontWeight:600,marginTop:2,lineHeight:1.2}}>
-                    ₩{dayTotals[day]>=10000?`${Math.round(dayTotals[day]/1000)}k`:dayTotals[day].toLocaleString()}
-                  </div>
-                )}
+                <div style={{height:13,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+                  {hasTx(day)&&<span style={{fontSize:8,color:"#6366F1",fontWeight:600,whiteSpace:"nowrap"}}>₩{dayTotals[day].toLocaleString()}</span>}
+                </div>
               </>
             )}
           </div>
@@ -612,7 +617,7 @@ export default function App() {
     const a=document.createElement("a");a.href=url;a.download=`영수증_${filterLabel}.zip`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   };
 
-  const bgStyle={minHeight:"100vh",background:"linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",color:"#1e1b4b",fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:86,position:"relative",overflowX:"hidden"};
+  const bgStyle={minHeight:"100vh",background:"linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",color:"#1e1b4b",fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:120,position:"relative",overflowX:"hidden"};
 
   /* ── LOGIN ── */
   if(!user) return (
@@ -622,11 +627,12 @@ export default function App() {
         <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:"#1e1b4b",marginTop:24,marginBottom:8}}>Welcome Back</div>
         <div style={{fontSize:14,color:"#94A3B8"}}>Sign in with your Google account</div>
       </div>
-      <div style={{background:"#FFFFFF",borderRadius:"28px 28px 0 0",padding:"28px 20px",paddingBottom:"calc(28px + env(safe-area-inset-bottom, 0px))",boxShadow:"0 -4px 40px rgba(99,102,241,.12)"}}>
-        <div style={{fontSize:14,fontWeight:600,color:"#94A3B8",marginBottom:14,textAlign:"center"}}>Sign in to get started</div>
+      <div style={{padding:"0 24px calc(40px + env(safe-area-inset-bottom,0px)) 24px"}}>
+        <div style={{background:"rgba(255,255,255,0.92)",backdropFilter:"blur(20px)",borderRadius:24,padding:"36px 28px",border:"1px solid rgba(255,255,255,0.95)",boxShadow:"0 8px 32px rgba(0,0,0,0.06)"}}>
+        <div style={{fontSize:18,fontWeight:600,color:"#334155",marginBottom:24,textAlign:"center"}}>Sign in to get started</div>
         <button className="btn-press"
           onClick={()=>supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}})}
-          style={{display:"flex",alignItems:"center",gap:12,background:"#FFFFFF",color:"#1e1b4b",border:"1.5px solid #E2E8F0",borderRadius:16,padding:"14px 20px",fontSize:15,fontWeight:600,cursor:"pointer",boxShadow:"0 2px 12px rgba(0,0,0,.06)",width:"100%",justifyContent:"center",fontFamily:"inherit"}}>
+          style={{display:"flex",alignItems:"center",gap:14,background:"#FFFFFF",color:"#1E293B",border:"1px solid #E2E8F0",borderRadius:16,padding:"15px 20px",fontSize:16,fontWeight:600,cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,.05)",width:"100%",justifyContent:"center",fontFamily:"inherit"}}>
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -635,6 +641,7 @@ export default function App() {
           </svg>
           Continue with Google
         </button>
+        </div>
       </div>
     </div>
   );
@@ -653,8 +660,14 @@ export default function App() {
                 <div style={{fontSize:36,fontWeight:900,letterSpacing:"-1.5px",color:"#1e1b4b",lineHeight:1.1,marginBottom:6}}>
                   ₩{remaining.toLocaleString()}
                 </div>
-                <div style={{fontSize:12,color:"#64748B",marginBottom:3}}>일일 사용 가능 금액 ₩{dailyBudget.toLocaleString()}</div>
-                <div style={{fontSize:12,fontWeight:600,color:pc}}>사용률 {Math.round(pct)}%</div>
+                <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:2}}>
+                  <div style={{alignSelf:"flex-start",background:"#EEF2FF",borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:600,color:"#6366F1",whiteSpace:"nowrap"}}>
+                    일일 사용 가능 금액 ₩{dailyBudget.toLocaleString()}
+                  </div>
+                  <div style={{alignSelf:"flex-start",background:pct>=90?"#FEF2F2":pct>=70?"#FFFBEB":"#F0FDF4",borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:600,color:pc}}>
+                    사용률 {Math.round(pct)}%
+                  </div>
+                </div>
               </div>
               <CardSVG size={80}/>
             </div>
@@ -689,9 +702,9 @@ export default function App() {
               const dayTotal=group.reduce((s,t)=>s+t.amount,0);
               return (
                 <div key={dateKey} style={{background:"#FFFFFF",borderRadius:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)",marginBottom:10,overflow:"hidden"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px 12px",borderBottom:"1px solid #F8F8FF"}}>
-                    <span style={{fontSize:13,fontWeight:600,color:"#64748B"}}>{formatDateHeader(dateKey)}</span>
-                    <span style={{fontSize:13,fontWeight:700,color:"#EF4444"}}>₩{dayTotal.toLocaleString()}</span>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"#F8FAFC"}}>
+                    <span style={{fontSize:13,fontWeight:700,color:"#1A1A2E"}}>{formatDateHeader(dateKey)}</span>
+                    <span style={{fontSize:13,color:"#EF4444"}}>₩{dayTotal.toLocaleString()}</span>
                   </div>
                   <div style={{padding:"0 16px"}}>
                     {group.map((tx,i)=>(
@@ -890,7 +903,7 @@ export default function App() {
       {!overlay&&tab!=="settings"&&(
         <>
           {fabOpen&&(
-            <div style={{position:"fixed",bottom:110,right:fabRight,display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",zIndex:60}}>
+            <div style={{position:"fixed",bottom:180,right:fabRight,display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",zIndex:60}}>
               {[
                 {Icon:IcCamera,label:"영수증 촬영",fn:()=>camRef.current?.click()},
                 {Icon:IcImage,label:"사진 업로드",fn:()=>galRef.current?.click()},
@@ -910,7 +923,7 @@ export default function App() {
               ))}
             </div>
           )}
-          <div style={{position:"fixed",bottom:90,right:fabRight,zIndex:80}}>
+          <div style={{position:"fixed",bottom:108,right:fabRight,zIndex:80}}>
             <button className="btn-press" onClick={()=>setFab(p=>!p)} style={{
               width:56,height:56,borderRadius:"50%",background:"linear-gradient(150deg,#818CF8,#6366F1)",
               border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
