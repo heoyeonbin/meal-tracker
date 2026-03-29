@@ -15,7 +15,7 @@ export default function Toast({ toast }) {
           ? "linear-gradient(180deg, rgba(248,113,113,.92), rgba(239,68,68,.88))"
           : "linear-gradient(180deg, rgba(129,140,248,.95), rgba(99,102,241,.88))",
         backdropFilter: "blur(18px)",
-        color: textPrimary,
+        color: "#FFFFFF",
         padding: "11px 24px",
         borderRadius: 999,
         fontSize: 13,

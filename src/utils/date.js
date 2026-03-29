@@ -2,12 +2,14 @@ export const LIMIT = 200_000;
 
 export const mKey = (offset = 0) => {
   const d = new Date();
+  d.setDate(1);
   d.setMonth(d.getMonth() - offset);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
 export const monthLabel = (offset = 0) => {
   const d = new Date();
+  d.setDate(1);
   d.setMonth(d.getMonth() - offset);
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
 };

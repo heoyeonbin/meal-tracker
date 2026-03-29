@@ -56,23 +56,24 @@ export default function GalleryScreen({
 
   return (
     <div style={{ position: "relative", zIndex: 1, padding: "52px 20px 0" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 0 8px", marginBottom: 4 }}>
-        <button className="btn-press" onClick={onPrevMonth} disabled={!canGoPrevGalleryMonth} style={{ background: "none", border: "none", cursor: canGoPrevGalleryMonth ? "pointer" : "default", width: 28, height: 28, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8", fontSize: 28, fontWeight: 400, opacity: canGoPrevGalleryMonth ? 1 : 0.32 }}>
-          ‹
-        </button>
-        <div style={{ fontSize: 24, fontWeight: 700, color: textSecondary, letterSpacing: "-.4px", lineHeight: 1.2 }}>{filterLabel}</div>
-        <button className="btn-press" onClick={onNextMonth} disabled={!canGoNextGalleryMonth} style={{ background: "none", border: "none", cursor: canGoNextGalleryMonth ? "pointer" : "default", width: 28, height: 28, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8", fontSize: 28, fontWeight: 400, opacity: canGoNextGalleryMonth ? 1 : 0.32 }}>
-          ›
-        </button>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "0 1px" }}>
-        <div style={{ fontSize: 14, color: textMuted, fontWeight: 500, lineHeight: 1.35 }}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
-        {galleryTxns.length > 0 && (
-          <button onClick={onDownloadAll} className="btn-press" style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 14px", height: 32, borderRadius: 20, background: "rgba(255,255,255,.36)", border: `1.5px solid ${brand}`, color: brand, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "none", backdropFilter: "blur(10px)" }}>
-            <DownloadIcon />
-            전체 다운로드
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button className="btn-press" onClick={onPrevMonth} disabled={!canGoPrevGalleryMonth} style={{ background: "none", border: "none", padding: 0, cursor: canGoPrevGalleryMonth ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", opacity: canGoPrevGalleryMonth ? 1 : 0.32 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-        )}
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#1A1A2E" }}>{filterLabel}</div>
+          <button className="btn-press" onClick={onNextMonth} disabled={!canGoNextGalleryMonth} style={{ background: "none", border: "none", padding: 0, cursor: canGoNextGalleryMonth ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", opacity: canGoNextGalleryMonth ? 1 : 0.32 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 14, color: "#94A3B8", fontWeight: 400 }}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
+          {galleryTxns.length > 0 && (
+            <button onClick={onDownloadAll} className="btn-press" style={{ display: "flex", alignItems: "center", padding: "0 14px", height: 32, borderRadius: 20, background: "none", border: `1.5px solid ${brand}`, color: brand, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+              전체 다운로드
+            </button>
+          )}
+        </div>
       </div>
 
       {galleryTxns.length > 0 ? (
