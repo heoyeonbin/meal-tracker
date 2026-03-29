@@ -788,7 +788,6 @@ export default function App() {
           </div>
         ):(
           <div style={{textAlign:"center",padding:"60px 0",color:"#94A3B8"}}>
-            <div style={{fontSize:40,marginBottom:12}}>📷</div>
             <div style={{fontSize:14,fontWeight:500}}>저장된 영수증이 없어요</div>
           </div>
         )}
