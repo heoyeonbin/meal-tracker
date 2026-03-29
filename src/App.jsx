@@ -443,8 +443,7 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
         paddingBottom:"calc(22px + env(safe-area-inset-bottom, 0px))",
         animation:"slideUp .28s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -18px 42px rgba(148,163,184,.18)",
         border:"1px solid rgba(255,255,255,.92)",backdropFilter:"blur(24px)"}}>
-        <div style={{width:44,height:5,borderRadius:99,background:"rgba(148,163,184,.34)",margin:"0 auto 22px"}}/>
-        <div style={{fontSize:16,fontWeight:600,color:"#64748B",marginBottom:6}}>{formatDateHeader(dateKey)}</div>
+        <div style={{fontSize:16,fontWeight:600,color:"#64748B",marginBottom:6,marginTop:4}}>{formatDateHeader(dateKey)}</div>
         <div style={{fontSize:28,fontWeight:800,color:"#1A1A2E",letterSpacing:"-.8px",marginBottom:18}}>₩{total.toLocaleString()}</div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
           <span style={{fontSize:13,color:"#94A3B8",fontWeight:600}}>사용 내역</span>
@@ -912,24 +911,24 @@ export default function App() {
     const galleryTxns=filteredTxns.filter(t=>recs[t.id]);
     const totalAmt=filteredTxns.reduce((s,t)=>s+t.amount,0);
     return (
-      <div style={{position:"relative",zIndex:1,padding:"52px 20px 0"}}>
+      <div style={{position:"relative",zIndex:1,padding:"48px 20px 0"}}>
         {/* Month nav */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 12px",marginBottom:4}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 8px",marginBottom:2}}>
           <button className="btn-press" onClick={()=>canGoPrevGalleryMonth&&setGalleryFilter(f=>Math.min(2,f+1))} disabled={!canGoPrevGalleryMonth} style={{
             background:"none",border:"none",cursor:canGoPrevGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
             display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoPrevGalleryMonth?1:.32}}>‹</button>
-          <div style={{fontSize:16,fontWeight:700,color:"#1A1A2E"}}>{filterLabel}</div>
+          <div style={{fontSize:15,fontWeight:700,color:"#1A1A2E",letterSpacing:"-.2px"}}>{filterLabel}</div>
           <button className="btn-press" onClick={()=>canGoNextGalleryMonth&&setGalleryFilter(f=>Math.max(0,f-1))} disabled={!canGoNextGalleryMonth} style={{
             background:"none",border:"none",cursor:canGoNextGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
             display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoNextGalleryMonth?1:.32}}>›</button>
         </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,padding:"0 2px"}}>
-          <div style={{fontSize:12,color:"#94A3B8"}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,padding:"0 2px"}}>
+          <div style={{fontSize:11,color:"#94A3B8",fontWeight:500}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
           {galleryTxns.length>0&&(
             <button onClick={dlAll} className="btn-press" style={{
-              display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:999,
+              display:"flex",alignItems:"center",gap:5,padding:"6px 11px",borderRadius:999,
               background:"rgba(255,255,255,.48)",border:"1px solid rgba(255,255,255,.9)",color:"#6366F1",
-              fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 10px 24px rgba(148,163,184,.10)",backdropFilter:"blur(14px)"}}>
+              fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 10px 24px rgba(148,163,184,.10)",backdropFilter:"blur(14px)"}}>
               <IcDownload/>전체 다운로드
             </button>
           )}
@@ -946,10 +945,10 @@ export default function App() {
                   </div>
                 </div>
                 <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
-                  position:"absolute",top:10,right:10,width:30,height:30,borderRadius:"50%",
-                  background:"rgba(255,255,255,.72)",border:"1px solid rgba(255,255,255,.92)",
-                  color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 10px 18px rgba(148,163,184,.12)",backdropFilter:"blur(12px)"}}>···</button>
+                  position:"absolute",top:14,right:14,width:26,height:26,borderRadius:10,
+                  background:"rgba(248,250,252,.74)",border:"1px solid rgba(255,255,255,.96)",
+                  color:"#64748B",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",
+                  justifyContent:"center",fontWeight:700,letterSpacing:"0",boxShadow:"0 8px 16px rgba(148,163,184,.10)",backdropFilter:"blur(10px)"}}>⋯</button>
                 <div style={{padding:"12px 12px 14px"}}>
                   <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{tx.merchant}</div>
                   <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:4}}>₩{tx.amount.toLocaleString()}</div>
@@ -1049,8 +1048,7 @@ export default function App() {
             background:"linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.70))",borderRadius:"24px 24px 0 0",padding:"12px 20px",
             paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
             zIndex:301,animation:"slideUp .22s ease",boxShadow:"0 -20px 44px rgba(99,102,241,.14)"}}>
-            <div style={{width:36,height:4,borderRadius:99,background:"#E2E8F0",margin:"0 auto 16px"}}/>
-            <div style={{fontSize:14,fontWeight:600,color:"#94A3B8",marginBottom:14,textAlign:"center"}}>{galleryBottomSheet.merchant}</div>
+            <div style={{fontSize:14,fontWeight:600,color:"#94A3B8",marginBottom:14,marginTop:4,textAlign:"center"}}>{galleryBottomSheet.merchant}</div>
             <button onClick={()=>{openEdit(galleryBottomSheet);}} style={{width:"100%",padding:"15px",borderRadius:16,background:"#EEF2FF",border:"none",color:"#6366F1",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>수정</button>
             <button onClick={()=>{delTxn(galleryBottomSheet.id);setGalleryBS(null);}} style={{width:"100%",padding:"15px",borderRadius:16,background:"#FFF5F5",border:"none",color:"#EF4444",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>삭제</button>
           </div>
