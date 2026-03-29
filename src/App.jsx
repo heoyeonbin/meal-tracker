@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { createClient } from '@supabase/supabase-js';
 import Holidays from 'date-holidays';
 import JSZip from "jszip";
+import blobCharacterImg from "./assets/blob-character.png";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -275,22 +276,11 @@ const IconSettings = ({active}) => (
 );
 
 const CardSVG = ({size=80}) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{animation:"float 3.5s ease-in-out infinite",flexShrink:0}}>
-    <defs>
-      <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#818CF8"/><stop offset="100%" stopColor="#6366F1"/></linearGradient>
-      <radialGradient id="cg2" cx="30%" cy="20%" r="60%"><stop offset="0%" stopColor="white" stopOpacity=".45"/><stop offset="100%" stopColor="white" stopOpacity="0"/></radialGradient>
-      <filter id="cf1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#6366F1" floodOpacity=".35"/></filter>
-    </defs>
-    <g transform="rotate(-12 50 50)" filter="url(#cf1)">
-      <rect x="8" y="20" width="84" height="56" rx="10" fill="url(#cg1)"/>
-      <ellipse cx="36" cy="32" rx="24" ry="11" fill="url(#cg2)" transform="rotate(-8 36 32)"/>
-      <rect x="8" y="20" width="84" height="56" rx="10" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="1.2"/>
-      <rect x="16" y="30" width="15" height="11" rx="3" fill="#E8C96A" opacity=".95"/>
-      {[0,1,2,3].map(g=>([0,1,2,3].map(d=>(<circle key={`${g}${d}`} cx={16+g*15+d*3} cy={54} r="1.1" fill="white" opacity=".6"/>))))}
-      <circle cx="70" cy="62" r="6" fill="#C7D2FE" opacity=".85"/>
-      <circle cx="78" cy="62" r="6" fill="#A5B4FC" opacity=".85"/>
-    </g>
-  </svg>
+  <img
+    src={blobCharacterImg}
+    alt=""
+    style={{width:size,height:size,objectFit:"contain",display:"block",animation:"float 3.5s ease-in-out infinite",flexShrink:0}}
+  />
 );
 
 /* ── UI Primitives ── */
