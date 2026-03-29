@@ -275,11 +275,11 @@ const IconSettings = ({active}) => (
   </svg>
 );
 
-const CardSVG = ({size=80}) => (
+const CardSVG = ({size=80,width=size,height=size,style}) => (
   <img
     src={blobCharacterImg}
     alt=""
-    style={{width:size,height:size,objectFit:"contain",display:"block",animation:"float 3.5s ease-in-out infinite",flexShrink:0}}
+    style={{width,height,objectFit:"contain",display:"block",animation:"float 3.5s ease-in-out infinite",flexShrink:0,...style}}
   />
 );
 
@@ -766,7 +766,7 @@ export default function App() {
   if(!user) return (
     <div style={{...bgStyle,display:"flex",flexDirection:"column",paddingBottom:0,minHeight:"100dvh"}}>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"36px 20px 18px",textAlign:"center"}}>
-        <CardSVG size={124}/>
+        <CardSVG width={132} height={124}/>
         <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:"#1e1b4b",marginTop:18,marginBottom:8}}>Welcome Back</div>
         <div style={{fontSize:14,color:"#94A3B8"}}>Sign in with your Google account</div>
       </div>
@@ -816,8 +816,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <div style={{width:108,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-                <CardSVG size={94}/>
+              <div style={{width:110,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                <CardSVG width={102} height={95}/>
               </div>
             </div>
           </div>
