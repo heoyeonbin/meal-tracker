@@ -19,8 +19,14 @@ if (!document.querySelector("#css3")) {
   const s = document.createElement("style"); s.id = "css3";
   s.textContent = `
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html,body{background:#EEF0FF}
+    html,body{
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.78), transparent 26%),
+        linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%);
+    }
+    body{color:#1E1B4B}
     input,button,textarea{font-family:'Noto Sans KR',sans-serif}
+    button{transition:transform .18s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease}
     input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     input[type=date]::-webkit-calendar-picker-indicator{opacity:0.35;cursor:pointer}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
@@ -29,11 +35,37 @@ if (!document.querySelector("#css3")) {
     @keyframes toast{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
     @keyframes fabPop{from{opacity:0;transform:scale(.88) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
     .fu{animation:fadeUp .3s cubic-bezier(.22,1,.36,1) both}
-    .tx-row:active{background:#F0F0FF!important}
+    .tx-row:active{background:rgba(99,102,241,.08)!important}
     .btn-press:active{transform:scale(.96)!important}
-    .inp:focus{border-color:#6366F1!important;box-shadow:0 0 0 3px rgba(99,102,241,.1)!important}
+    .btn-press:hover{box-shadow:0 12px 28px rgba(99,102,241,.16)}
+    .inp{
+      background:rgba(255,255,255,.72)!important;
+      border:1px solid rgba(255,255,255,.88)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42), 0 10px 28px rgba(148,163,184,.12)!important;
+      backdrop-filter:blur(14px)
+    }
+    .inp::placeholder{color:#A0AEC0}
+    .inp:focus{border-color:#7C83FF!important;box-shadow:0 0 0 3px rgba(124,131,255,.12),0 10px 28px rgba(99,102,241,.12)!important}
+    .glass-panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.56))!important;
+      border:1px solid rgba(255,255,255,.9)!important;
+      box-shadow:0 18px 44px rgba(99,102,241,.12)!important;
+      backdrop-filter:blur(20px)
+    }
+    .glass-soft{
+      background:rgba(255,255,255,.62)!important;
+      border:1px solid rgba(255,255,255,.72)!important;
+      box-shadow:0 10px 28px rgba(148,163,184,.12)!important;
+      backdrop-filter:blur(16px)
+    }
     @media(min-width:768px){
-      #root>div{max-width:430px!important;margin:0 auto!important;box-shadow:0 0 60px rgba(99,102,241,.18)!important}
+      #root>div{
+        max-width:430px!important;
+        margin:0 auto!important;
+        border-radius:32px;
+        overflow:hidden;
+        box-shadow:0 28px 80px rgba(99,102,241,.20)!important
+      }
     }
   `;
   document.head.appendChild(s);
@@ -214,10 +246,10 @@ const CardSVG = ({size=80}) => (
 
 /* ── UI Primitives ── */
 const Toast = ({toast}) => toast?(
-  <div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",zIndex:9999,
-    background:toast.err?"rgba(239,68,68,.93)":"rgba(99,102,241,.93)",
-    backdropFilter:"blur(12px)",color:"#fff",padding:"10px 22px",borderRadius:99,
-    fontSize:13,fontWeight:700,whiteSpace:"nowrap",boxShadow:"0 8px 32px rgba(99,102,241,.3)",
+  <div className="glass-soft" style={{position:"fixed",bottom:104,left:"50%",transform:"translateX(-50%)",zIndex:9999,
+    background:toast.err?"linear-gradient(180deg, rgba(248,113,113,.92), rgba(239,68,68,.88))":"linear-gradient(180deg, rgba(129,140,248,.95), rgba(99,102,241,.88))",
+    backdropFilter:"blur(18px)",color:"#fff",padding:"11px 24px",borderRadius:999,
+    fontSize:13,fontWeight:700,whiteSpace:"nowrap",boxShadow:"0 18px 36px rgba(99,102,241,.24)",
     animation:"toast .25s ease both",border:"1px solid rgba(255,255,255,.2)"}}>
     {toast.msg}
   </div>
@@ -228,8 +260,8 @@ const FormInput = ({label,value,onChange,type="text",placeholder}) => (
   <div style={{marginBottom:12}}>
     {label&&<div style={{fontSize:12,color:"#64748B",fontWeight:500,marginBottom:6,textAlign:"left"}}>{label}</div>}
     <input className="inp" type={type} value={value} placeholder={placeholder} onChange={e=>onChange(e.target.value)}
-      style={{width:"100%",background:"#FFFFFF",border:"1.5px solid #E2E8F0",borderRadius:12,
-        padding:"13px 14px",fontSize:15,color:"#1e1b4b",outline:"none",transition:"border-color .15s, box-shadow .15s",fontFamily:"inherit"}}/>
+      style={{width:"100%",background:"rgba(255,255,255,.72)",border:"1px solid rgba(255,255,255,.88)",borderRadius:14,
+        padding:"14px 16px",fontSize:15,color:"#1e1b4b",outline:"none",transition:"border-color .15s, box-shadow .15s",fontFamily:"inherit"}}/>
   </div>
 );
 
@@ -237,17 +269,18 @@ const FormInput = ({label,value,onChange,type="text",placeholder}) => (
 const TabBar = ({tab,setTab}) => (
   <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
     zIndex:100,padding:"12px 21px calc(21px + env(safe-area-inset-bottom,0px)) 21px"}}>
-    <div style={{display:"flex",background:"rgba(255,255,255,0.92)",backdropFilter:"blur(12px)",
+    <div className="glass-panel" style={{display:"flex",background:"rgba(255,255,255,0.64)",backdropFilter:"blur(22px)",
       borderRadius:36,height:62,padding:4,border:"1px solid rgba(255,255,255,0.9)",
-      boxShadow:"0 4px 24px rgba(99,102,241,.14)"}}>
+      boxShadow:"0 12px 32px rgba(99,102,241,.14)"}}>
       {[{id:"home",label:"홈",Icon:IconHome},{id:"gallery",label:"갤러리",Icon:IconGallery},{id:"settings",label:"설정",Icon:IconSettings}]
         .map(({id,label,Icon})=>{
           const active=tab===id;
           return (
             <button key={id} onClick={()=>setTab(id)} style={{
               flex:1,border:"none",cursor:"pointer",fontFamily:"inherit",
-              borderRadius:26,background:active?"#6366F1":"transparent",
+              borderRadius:26,background:active?"linear-gradient(150deg,#7C83FF,#6366F1)":"transparent",
               display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,
+              boxShadow:active?"0 10px 24px rgba(99,102,241,.24)":"none",
               transition:"background .2s"}}>
               <Icon active={active}/>
               <span style={{fontSize:10,fontWeight:600,color:active?"#FFFFFF":"#94A3B8",letterSpacing:0.5,transition:"color .2s"}}>{label}</span>
@@ -261,10 +294,10 @@ const TabBar = ({tab,setTab}) => (
 /* ── Back Header ── */
 const BackHeader = ({title,onBack}) => (
   <div style={{display:"flex",alignItems:"center",gap:10,padding:"52px 20px 16px"}}>
-    <button className="btn-press" onClick={onBack} style={{
-      width:36,height:36,borderRadius:"50%",background:"#FFFFFF",border:"1.5px solid #E2E8F0",
+    <button className="btn-press glass-soft" onClick={onBack} style={{
+      width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.62)",border:"1px solid rgba(255,255,255,.88)",
       display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-      boxShadow:"0 2px 8px rgba(0,0,0,.06)",flexShrink:0}}>
+      boxShadow:"0 12px 24px rgba(148,163,184,.14)",flexShrink:0}}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 18l-6-6 6-6"/>
       </svg>
@@ -278,12 +311,12 @@ const FixedConfirmBtn = ({onClick,label="확인"}) => (
   <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
     width:"100%",maxWidth:430,padding:"16px 20px",
     paddingBottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
-    background:"linear-gradient(to top,#E8F4FD 50%,transparent)"}}>
+    background:"linear-gradient(to top,rgba(232,244,253,.96) 50%,rgba(232,244,253,0))"}}>
     <button className="btn-press" onClick={onClick} style={{
       width:"100%",borderRadius:16,padding:"16px",fontSize:15,fontWeight:700,
       cursor:"pointer",border:"none",color:"#fff",fontFamily:"inherit",
-      background:"linear-gradient(150deg,#818CF8,#6366F1)",
-      boxShadow:"0 4px 20px rgba(99,102,241,.4)"}}>
+      background:"linear-gradient(150deg,#8B93FF,#6366F1)",
+      boxShadow:"0 16px 36px rgba(99,102,241,.32)"}}>
       {label}
     </button>
   </div>
@@ -359,12 +392,12 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
   const total = dayTxns.reduce((s,t)=>s+t.amount,0);
   return (
     <>
-      <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.45)",zIndex:200,backdropFilter:"blur(2px)"}}/>
-      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-        width:"100%",maxWidth:430,background:"#FFFFFF",zIndex:201,
+      <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.38)",zIndex:200,backdropFilter:"blur(8px)"}}/>
+      <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
+        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.70))",zIndex:201,
         borderRadius:"24px 24px 0 0",padding:"12px 20px",
         paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)"}}>
+        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -20px 44px rgba(99,102,241,.14)"}}>
         <div style={{width:36,height:4,borderRadius:99,background:"#E2E8F0",margin:"0 auto 20px"}}/>
         <div style={{fontSize:17,fontWeight:700,color:"#1e1b4b",marginBottom:4}}>{formatDateHeader(dateKey)}</div>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:16,paddingBottom:12,borderBottom:"1px solid #F1F5F9"}}>
@@ -385,9 +418,9 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
         </div>
         <button className="btn-press" onClick={onClose} style={{
           width:"100%",padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
-          background:"linear-gradient(150deg,#818CF8,#6366F1)",color:"#fff",
+          background:"linear-gradient(150deg,#8B93FF,#6366F1)",color:"#fff",
           fontSize:15,fontWeight:700,fontFamily:"inherit",
-          boxShadow:"0 4px 20px rgba(99,102,241,.35)"}}>
+          boxShadow:"0 16px 34px rgba(99,102,241,.28)"}}>
           확인
         </button>
       </div>
@@ -437,7 +470,7 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
       )}
 
       {/* Form card */}
-      <div style={{margin:"0 20px",background:"#FFFFFF",borderRadius:20,padding:"20px",boxShadow:"0 2px 16px rgba(99,102,241,.08)"}}>
+      <div className="glass-panel" style={{margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",borderRadius:20,padding:"20px",boxShadow:"0 18px 38px rgba(99,102,241,.12)"}}>
         <FormInput label="결제 금액"
           value={form.amount ? parseInt(form.amount,10).toLocaleString() : ""}
           onChange={v=>setForm(f=>({...f,amount:v.replace(/[^0-9]/g,"")}))}
@@ -617,7 +650,7 @@ export default function App() {
     const a=document.createElement("a");a.href=url;a.download=`영수증_${filterLabel}.zip`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   };
 
-  const bgStyle={minHeight:"100vh",background:"linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",color:"#1e1b4b",fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:120,position:"relative",overflowX:"hidden"};
+  const bgStyle={minHeight:"100vh",background:"radial-gradient(circle at top left, rgba(255,255,255,.82), transparent 26%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",color:"#1e1b4b",fontFamily:"'Noto Sans KR',sans-serif",width:"100%",paddingBottom:120,position:"relative",overflowX:"hidden"};
 
   /* ── LOGIN ── */
   if(!user) return (
@@ -628,11 +661,11 @@ export default function App() {
         <div style={{fontSize:14,color:"#94A3B8"}}>Sign in with your Google account</div>
       </div>
       <div style={{padding:"0 24px calc(40px + env(safe-area-inset-bottom,0px)) 24px"}}>
-        <div style={{background:"rgba(255,255,255,0.92)",backdropFilter:"blur(20px)",borderRadius:24,padding:"36px 28px",border:"1px solid rgba(255,255,255,0.95)",boxShadow:"0 8px 32px rgba(0,0,0,0.06)"}}>
+        <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",backdropFilter:"blur(22px)",borderRadius:24,padding:"36px 28px",border:"1px solid rgba(255,255,255,0.95)",boxShadow:"0 20px 44px rgba(99,102,241,0.12)"}}>
         <div style={{fontSize:18,fontWeight:600,color:"#334155",marginBottom:24,textAlign:"center"}}>Sign in to get started</div>
         <button className="btn-press"
           onClick={()=>supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}})}
-          style={{display:"flex",alignItems:"center",gap:14,background:"#FFFFFF",color:"#1E293B",border:"1px solid #E2E8F0",borderRadius:16,padding:"15px 20px",fontSize:16,fontWeight:600,cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,.05)",width:"100%",justifyContent:"center",fontFamily:"inherit"}}>
+          style={{display:"flex",alignItems:"center",gap:14,background:"linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78))",color:"#1E293B",border:"1px solid rgba(255,255,255,.95)",borderRadius:16,padding:"15px 20px",fontSize:16,fontWeight:600,cursor:"pointer",boxShadow:"0 16px 30px rgba(148,163,184,.14)",width:"100%",justifyContent:"center",fontFamily:"inherit"}}>
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -653,7 +686,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:1}}>
         <div style={{padding:"52px 20px 0"}}>
           {/* Hero Card */}
-          <div style={{background:"#FFFFFF",borderRadius:24,padding:"20px",boxShadow:"0 2px 20px rgba(99,102,241,.1)",marginBottom:14}}>
+          <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58))",borderRadius:24,padding:"22px",boxShadow:"0 18px 40px rgba(99,102,241,.12)",marginBottom:14}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:12,color:"#94A3B8",marginBottom:4,fontWeight:500}}>이번 달 잔액</div>
@@ -674,12 +707,12 @@ export default function App() {
           </div>
 
           {/* Toggle */}
-          <div style={{background:"#FFFFFF",borderRadius:14,padding:"4px",boxShadow:"0 1px 8px rgba(99,102,241,.08)",display:"flex",marginBottom:16}}>
+          <div className="glass-soft" style={{background:"rgba(255,255,255,.62)",borderRadius:14,padding:"4px",boxShadow:"0 12px 28px rgba(99,102,241,.10)",display:"flex",marginBottom:16}}>
             {[{id:"list",label:"리스트"},{id:"calendar",label:"달력"}].map(({id,label})=>(
               <button key={id} className="btn-press" onClick={()=>setHomeView(id)} style={{
                 flex:1,padding:"10px",borderRadius:10,border:"none",cursor:"pointer",
                 fontSize:14,fontWeight:homeView===id?700:500,
-                background:homeView===id?"#6366F1":"transparent",
+                background:homeView===id?"linear-gradient(150deg,#7C83FF,#6366F1)":"transparent",
                 color:homeView===id?"#FFFFFF":"#64748B",transition:"all .2s",fontFamily:"inherit"}}>
                 {label}
               </button>
@@ -701,8 +734,8 @@ export default function App() {
               const group=groupedTxns[dateKey];
               const dayTotal=group.reduce((s,t)=>s+t.amount,0);
               return (
-                <div key={dateKey} style={{background:"#FFFFFF",borderRadius:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)",marginBottom:10,overflow:"hidden"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"#F8FAFC"}}>
+                <div key={dateKey} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",borderRadius:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",marginBottom:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.86)"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"rgba(248,250,252,.72)"}}>
                     <span style={{fontSize:13,fontWeight:700,color:"#1A1A2E"}}>{formatDateHeader(dateKey)}</span>
                     <span style={{fontSize:13,color:"#EF4444"}}>₩{dayTotal.toLocaleString()}</span>
                   </div>
@@ -729,7 +762,7 @@ export default function App() {
         {/* Calendar View */}
         {homeView==="calendar"&&(
           <div style={{padding:"0 20px 20px"}}>
-            <div style={{background:"#FFFFFF",borderRadius:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)",padding:"16px 4px"}}>
+            <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",borderRadius:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",padding:"16px 4px",border:"1px solid rgba(255,255,255,.86)"}}>
               <CalendarView txns={txns} onDayPress={(dateKey)=>setCalDaySheet(dateKey)}/>
             </div>
           </div>
@@ -770,14 +803,14 @@ export default function App() {
         {galleryTxns.length>0?(
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {galleryTxns.map(tx=>(
-              <div key={tx.id} style={{background:"#FFFFFF",borderRadius:20,overflow:"hidden",position:"relative",boxShadow:"0 2px 14px rgba(99,102,241,.08)"}}>
+              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",position:"relative",boxShadow:"0 16px 34px rgba(148,163,184,.14)",border:"1px solid rgba(255,255,255,.86)"}}>
                 <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
                   style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",cursor:"pointer"}}/>
                 <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
                   position:"absolute",top:8,right:8,width:28,height:28,borderRadius:"50%",
-                  background:"rgba(255,255,255,.92)",border:"1px solid #E2E8F0",
+                  background:"rgba(255,255,255,.82)",border:"1px solid rgba(255,255,255,.92)",
                   color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 2px 6px rgba(0,0,0,.08)"}}>···</button>
+                  justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 12px 20px rgba(148,163,184,.14)"}}>···</button>
                 <div style={{padding:"10px 12px"}}>
                   <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
                   <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:2}}>₩{tx.amount.toLocaleString()}</div>
@@ -804,7 +837,7 @@ export default function App() {
     return (
       <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
         <div style={{fontSize:22,fontWeight:800,color:"#1e1b4b",marginBottom:20,textAlign:"left"}}>설정</div>
-        <div style={{background:"#FFFFFF",borderRadius:24,padding:"20px",marginBottom:24,boxShadow:"0 2px 16px rgba(99,102,241,.08)",display:"flex",alignItems:"center",gap:16}}>
+        <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",borderRadius:24,padding:"20px",marginBottom:24,boxShadow:"0 18px 40px rgba(99,102,241,.12)",display:"flex",alignItems:"center",gap:16}}>
           <div style={{width:56,height:56,borderRadius:18,flexShrink:0,background:"linear-gradient(150deg,#818CF8,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(99,102,241,.3)"}}>
             <span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{initial}</span>
           </div>
@@ -815,7 +848,7 @@ export default function App() {
         </div>
 
         <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>프로젝트 설정</div>
-        <div style={{background:"#FFFFFF",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)"}}>
+        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
           <button onClick={()=>setOpenSection(openSection==="project"?null:"project")} style={{...rowS,borderBottom:openSection==="project"?"1px solid #F1F5F9":"none"}}>
             <div style={iconBox("#6366F1")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20l-6-4z"/></svg></div>
             <div style={{flex:1,textAlign:"left"}}>
@@ -836,7 +869,7 @@ export default function App() {
         </div>
 
         <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>데이터 관리</div>
-        <div style={{background:"#FFFFFF",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)"}}>
+        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
           <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={rowS}>
             <div style={iconBox("#10B981")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="11"/><polyline points="9 15 12 18 15 15"/></svg></div>
             <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>액셀 다운로드</div></div>
@@ -845,7 +878,7 @@ export default function App() {
         </div>
 
         <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>계정</div>
-        <div style={{background:"#FFFFFF",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 2px 12px rgba(99,102,241,.06)"}}>
+        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
           <button onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}} style={rowS}>
             <div style={iconBox("#EF4444")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
             <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:500,color:"#EF4444"}}>로그아웃</div></div>
@@ -872,11 +905,11 @@ export default function App() {
       {/* Gallery bottom sheet */}
       {galleryBottomSheet&&(
         <>
-          <div onClick={()=>setGalleryBS(null)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(26,26,46,.35)",backdropFilter:"blur(3px)"}}/>
-          <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
-            background:"#FFFFFF",borderRadius:"24px 24px 0 0",padding:"12px 20px",
+          <div onClick={()=>setGalleryBS(null)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(26,26,46,.35)",backdropFilter:"blur(8px)"}}/>
+          <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
+            background:"linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.70))",borderRadius:"24px 24px 0 0",padding:"12px 20px",
             paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-            zIndex:301,animation:"slideUp .22s ease",boxShadow:"0 -4px 40px rgba(99,102,241,.12)"}}>
+            zIndex:301,animation:"slideUp .22s ease",boxShadow:"0 -20px 44px rgba(99,102,241,.14)"}}>
             <div style={{width:36,height:4,borderRadius:99,background:"#E2E8F0",margin:"0 auto 16px"}}/>
             <div style={{fontSize:14,fontWeight:600,color:"#94A3B8",marginBottom:14,textAlign:"center"}}>{galleryBottomSheet.merchant}</div>
             <button onClick={()=>{openEdit(galleryBottomSheet);}} style={{width:"100%",padding:"15px",borderRadius:16,background:"#EEF2FF",border:"none",color:"#6366F1",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>수정</button>
@@ -886,7 +919,7 @@ export default function App() {
       )}
 
       {/* FAB menu overlay */}
-      {fabOpen&&<div onClick={()=>setFab(false)} style={{position:"fixed",inset:0,zIndex:50,background:"rgba(26,26,46,.25)",backdropFilter:"blur(2px)"}}/>}
+      {fabOpen&&<div onClick={()=>setFab(false)} style={{position:"fixed",inset:0,zIndex:50,background:"rgba(26,26,46,.25)",backdropFilter:"blur(8px)"}}/>}
 
       {/* Overlay pages */}
       {overlay==="loading"&&<LoadingScreen preview={preview}/>}
@@ -908,13 +941,13 @@ export default function App() {
                 {Icon:IcImage,label:"사진 업로드",fn:()=>galRef.current?.click()},
                 {Icon:IcPencil,label:"직접 등록",fn:()=>{setForm({amount:"",merchant:"",date:todayMD()});setOvSrc("manual");setOv("form");setFab(false);}},
               ].map((opt,i)=>(
-                <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press" style={{
-                  display:"flex",alignItems:"center",gap:10,background:"#FFFFFF",
-                  border:"1.5px solid #EBEBFF",borderRadius:99,padding:"10px 16px 10px 10px",
+                <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press glass-soft" style={{
+                  display:"flex",alignItems:"center",gap:10,background:"linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72))",
+                  border:"1px solid rgba(255,255,255,.94)",borderRadius:99,padding:"10px 16px 10px 10px",
                   fontSize:13,fontWeight:600,color:"#1e1b4b",cursor:"pointer",
-                  boxShadow:"0 4px 20px rgba(99,102,241,.14)",fontFamily:"inherit",
+                  boxShadow:"0 18px 34px rgba(99,102,241,.14)",fontFamily:"inherit",
                   animation:"fabPop .18s ease both",animationDelay:`${i*.05}s`,whiteSpace:"nowrap"}}>
-                  <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(150deg,#818CF8,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(150deg,#8B93FF,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 10px 18px rgba(99,102,241,.22)"}}>
                     <opt.Icon/>
                   </div>
                   {opt.label}
@@ -924,9 +957,9 @@ export default function App() {
           )}
           <div style={{position:"fixed",bottom:108,right:fabRight,zIndex:80}}>
             <button className="btn-press" onClick={()=>setFab(p=>!p)} style={{
-              width:56,height:56,borderRadius:"50%",background:"linear-gradient(150deg,#818CF8,#6366F1)",
+              width:56,height:56,borderRadius:"50%",background:"linear-gradient(150deg,#8B93FF,#6366F1)",
               border:"none",fontSize:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-              boxShadow:"0 8px 24px rgba(99,102,241,.45)",transition:"transform .25s",
+              boxShadow:"0 18px 38px rgba(99,102,241,.34)",transition:"transform .25s",
               transform:fabOpen?"rotate(45deg)":"rotate(0deg)",color:"#fff"}}>
               {fabOpen?"×":"+"}
             </button>
