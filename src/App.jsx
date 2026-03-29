@@ -1,14 +1,15 @@
 ﻿import { useState, useEffect, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
-import { createClient } from '@supabase/supabase-js';
-import Holidays from 'date-holidays';
 import JSZip from "jszip";
 import blobCharacterImg from "./assets/blob-character.png";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase, GS, US, compress, uploadReceipt } from "./services/supabase";
+import { ocr } from "./services/ocr";
+import { LIMIT, getTxnSortTime, mKey, monthLabel, normalizeTxnDate, parseTxnDate, todayYMD } from "./utils/date";
+import Toast from "./components/Toast";
+import FormPage from "./components/FormPage";
+import HomeScreen, { CalendarDaySheet } from "./screens/HomeScreen";
+import GalleryScreen, { GalleryBottomSheet } from "./screens/GalleryScreen";
+import SettingsScreen from "./screens/SettingsScreen";
 
 if (!document.querySelector("#gf3")) {
   const l = document.createElement("link"); l.id = "gf3";
@@ -95,125 +96,11 @@ if (!document.querySelector("#css3")) {
 }
 
 /* ── Constants & Utilities ── */
-const LIMIT = 200_000;
-const mKey = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
-const monthLabel = (offset=0) => { const d=new Date(); d.setMonth(d.getMonth()-offset); return `${d.getFullYear()}년 ${d.getMonth()+1}월`; };
-const pad2 = v => String(v).padStart(2,"0");
-const todayYMD = () => { const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
-const pctColor = p => p>=90?"#EF4444":p>=70?"#F59E0B":"#10B981";
-
-const isYMD = (dateStr="") => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
-const isMD = (dateStr="") => /^\d{2}\/\d{2}$/.test(dateStr);
-const parseTxnDate = (dateStr, referenceDate = new Date()) => {
-  if (!dateStr) return null;
-  if (isYMD(dateStr)) {
-    const [yyyy, mm, dd] = dateStr.split("-").map(Number);
-    return new Date(yyyy, mm - 1, dd);
-  }
-  if (isMD(dateStr)) {
-    const [mm, dd] = dateStr.split("/").map(Number);
-    let year = referenceDate.getFullYear();
-    if (mm > referenceDate.getMonth() + 1) year -= 1;
-    return new Date(year, mm - 1, dd);
-  }
-  return null;
-};
-const normalizeTxnDate = (dateStr, referenceDate = new Date()) => {
-  const parsed = parseTxnDate(dateStr, referenceDate);
-  if (!parsed) return "";
-  return `${parsed.getFullYear()}-${pad2(parsed.getMonth()+1)}-${pad2(parsed.getDate())}`;
-};
-const formatStoredDate = (dateStr, referenceDate = new Date()) => {
-  const normalized = normalizeTxnDate(dateStr, referenceDate);
-  return normalized || dateStr;
-};
-const getTxnSortTime = (dateStr, referenceDate = new Date()) => parseTxnDate(dateStr, referenceDate)?.getTime() || 0;
-const sameTxnDate = (left, right, referenceDate = new Date()) => normalizeTxnDate(left, referenceDate) === normalizeTxnDate(right, referenceDate);
-
-const formatDateHeader = (dateStr) => {
-  const d = parseTxnDate(dateStr);
-  if (!d) return dateStr;
-  const days = ["일","월","화","수","목","금","토"];
-  return `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-};
-
-const toYMD = (dateStr) => normalizeTxnDate(dateStr);
-const fromYMD = (ymd) => normalizeTxnDate(ymd);
-
 /* ── Storage & DB ── */
 const S = {
   get: async k => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch { return null; } },
   set: async (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} },
 };
-const GS = {
-  load: async () => {
-    const { data:{ user } } = await supabase.auth.getUser();
-    if (!user) return [];
-    const { data } = await supabase.from("transactions").select("*").eq("user_id",user.id).order("created_at",{ascending:false});
-    return data||[];
-  },
-  migrateDates: async rows => {
-    const updates = rows
-      .filter(r => r?.date && !isYMD(r.date))
-      .map(async r => {
-        const normalized = normalizeTxnDate(r.date);
-        if (!normalized || normalized === r.date) return;
-        await supabase.from("transactions").update({ date: normalized }).eq("id", r.id);
-      });
-    await Promise.all(updates);
-  },
-  add: async tx => {
-    const { data:{ user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("transactions").insert({id:tx.id,user_id:user.id,amount:tx.amount,merchant:tx.merchant,date:tx.date,image_url:tx.image_url||null});
-  },
-  del: async id => { await supabase.from("transactions").delete().eq("id",id); },
-  update: async tx => { await supabase.from("transactions").update({amount:tx.amount,merchant:tx.merchant,date:tx.date}).eq("id",tx.id); },
-};
-const US = {
-  load: async () => {
-    const { data:{ user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const { data } = await supabase.from("user_settings").select("*").eq("user_id",user.id).single();
-    return data;
-  },
-  save: async (cfg, userId) => {
-    await supabase.from("user_settings").upsert({user_id:userId,project_name:cfg.projectName||"",email:cfg.email||"",threshold:cfg.threshold||50000,updated_at:new Date().toISOString()});
-  },
-};
-
-const compress = (url,px=900) => new Promise(res => {
-  const img=new Image(); img.onload=()=>{
-    const sc=Math.min(1,px/Math.max(img.width,img.height));
-    const c=document.createElement("canvas"); c.width=img.width*sc; c.height=img.height*sc;
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",.7));
-  }; img.src=url;
-});
-const uploadReceipt = async (userId, txId, dataUrl) => {
-  try {
-    const base64=dataUrl.split(",")[1]; const mime=dataUrl.split(";")[0].split(":")[1];
-    const ext=mime==="image/png"?"png":"jpg"; const path=`${userId}/${txId}.${ext}`;
-    const blob=await fetch(dataUrl).then(r=>r.blob());
-    const { error }=await supabase.storage.from("receipts").upload(path,blob,{contentType:mime,upsert:true});
-    if(error) return null;
-    const { data }=supabase.storage.from("receipts").getPublicUrl(path);
-    return data.publicUrl;
-  } catch { return null; }
-};
-
-async function ocr(b64, mt) {
-  try {
-    const r=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:200,
-        system:`Receipt parser. Return ONLY valid JSON: {"amount":number_or_null,"merchant":"string","date":"MM/DD"}. amount=total KRW integer. merchant=Korean store name or "알 수 없음". date=MM/DD or null.`,
-        messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:mt,data:b64}},{type:"text",text:"총 결제금액, 가맹점명, 결제일자 추출"}]}]})
-    });
-    const d=await r.json(); const t=d.content?.find(b=>b.type==="text")?.text||"{}";
-    return JSON.parse(t.replace(/```json|```/g,"").trim());
-  } catch { return {amount:null,merchant:"알 수 없음",date:null}; }
-}
 
 function exportXlsx(txns, projectName) {
   const wb=XLSX.utils.book_new(); const ws={};
@@ -283,27 +170,6 @@ const CardSVG = ({size=80,width=size,height=size,style}) => (
   />
 );
 
-/* ── UI Primitives ── */
-const Toast = ({toast}) => toast?(
-  <div style={{position:"fixed",bottom:104,left:"50%",transform:"translateX(-50%)",zIndex:9999,
-    background:toast.err?"linear-gradient(180deg, rgba(248,113,113,.92), rgba(239,68,68,.88))":"linear-gradient(180deg, rgba(129,140,248,.95), rgba(99,102,241,.88))",
-    backdropFilter:"blur(18px)",color:"#1E1B4B",padding:"11px 24px",borderRadius:999,
-    fontSize:13,fontWeight:700,whiteSpace:"nowrap",boxShadow:"0 18px 36px rgba(99,102,241,.24)",
-    animation:"toast .25s ease both",border:"1px solid rgba(255,255,255,.2)"}}>
-    {toast.msg}
-  </div>
-):null;
-
-/* ── Form Input ── */
-const FormInput = ({label,value,onChange,type="text",placeholder}) => (
-  <div style={{marginBottom:12}}>
-    {label&&<div style={{fontSize:12,color:"#64748B",fontWeight:500,marginBottom:6,textAlign:"left"}}>{label}</div>}
-    <input className="inp" type={type} value={value} placeholder={placeholder} onChange={e=>onChange(e.target.value)}
-      style={{width:"100%",background:"#FFFFFF",border:"1px solid #E2E8F0",borderRadius:10,
-        padding:"13px 14px",fontSize:15,color:"#1e1b4b",outline:"none",transition:"border-color .15s, box-shadow .15s",fontFamily:"inherit",boxShadow:"none"}}/>
-  </div>
-);
-
 /* ── Tab Bar ── */
 const TabBar = ({tab,setTab}) => (
   <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
@@ -329,229 +195,6 @@ const TabBar = ({tab,setTab}) => (
     </div>
   </div>
 );
-
-/* ── Back Header ── */
-const BackHeader = ({title,onBack}) => (
-  <div style={{display:"flex",alignItems:"center",gap:10,padding:"52px 20px 16px"}}>
-    <button className="btn-press glass-soft" onClick={onBack} style={{
-      width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.62)",border:"1px solid rgba(255,255,255,.88)",
-      display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-      boxShadow:"0 12px 24px rgba(148,163,184,.14)",flexShrink:0}}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </button>
-    <div style={{fontSize:17,fontWeight:700,color:"#1e1b4b"}}>{title}</div>
-  </div>
-);
-
-/* ── Confirm Button (fixed bottom) ── */
-const FixedConfirmBtn = ({onClick,label="확인"}) => (
-  <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-    width:"100%",maxWidth:430,padding:"16px 20px",
-    paddingBottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
-    background:"linear-gradient(to top,rgba(232,244,253,.96) 50%,rgba(232,244,253,0))"}}>
-    <button className="btn-press" onClick={onClick} style={{
-      width:"100%",height:52,borderRadius:14,padding:"0 16px",fontSize:16,fontWeight:700,
-      cursor:"pointer",border:"none",color:"#fff",fontFamily:"inherit",
-      background:"linear-gradient(90deg,#818CF8,#6366F1)",
-      boxShadow:"0 12px 28px rgba(99,102,241,.28)"}}>
-      {label}
-    </button>
-  </div>
-);
-
-/* ── Calendar View ── */
-function CalendarView({txns, onDayPress, monthDate, selectedDate}) {
-  const year=monthDate.getFullYear(), month=monthDate.getMonth();
-  const today=new Date();
-  const firstDay=monthDate.getDay();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-
-  const dayTotals={};
-  txns.forEach(tx=>{
-    const txDate = parseTxnDate(tx.date, monthDate);
-    if(!txDate) return;
-    if(txDate.getFullYear()===year && txDate.getMonth()===month){
-      const day=txDate.getDate();
-      dayTotals[day]=(dayTotals[day]||0)+tx.amount;
-    }
-  });
-
-  const hasTx=(day)=>!!dayTotals[day];
-  const isToday=(day)=>day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
-  const isSelected=(day)=>selectedDate===`${year}-${pad2(month+1)}-${pad2(day)}`;
-
-  const cells=[];
-  for(let i=0;i<firstDay;i++) cells.push(null);
-  for(let i=1;i<=daysInMonth;i++) cells.push(i);
-
-  return (
-    <div style={{padding:"0 4px 8px"}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",textAlign:"center",marginBottom:12}}>
-        {["일","월","화","수","목","금","토"].map((d,i)=>(
-          <div key={d} style={{fontSize:11,color:"#94A3B8",padding:"4px 0",fontWeight:500}}>{d}</div>
-        ))}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",rowGap:14}}>
-        {cells.map((day,i)=>(
-          <div key={i} style={{minHeight:52,textAlign:"center",cursor:day&&hasTx(day)?"pointer":"default"}}
-            onClick={()=>day&&hasTx(day)&&onDayPress(`${year}-${pad2(month+1)}-${pad2(day)}`)}>
-            {day&&(
-              <>
-                <div style={{
-                  width:30,height:30,borderRadius:"50%",margin:"0 auto",
-                  background:isToday(day)?"#6366F1":isSelected(day)?"rgba(99,102,241,.12)":"transparent",
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  color:isToday(day)?"#fff":"#1A1A2E",
-                  fontSize:13,fontWeight:500,
-                }}>
-                  {day}
-                </div>
-                <div style={{height:16,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",marginTop:2}}>
-                  {hasTx(day)&&<span style={{fontSize:9,color:"#6366F1",fontWeight:500,whiteSpace:"nowrap"}}>₩{dayTotals[day].toLocaleString()}</span>}
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ── Calendar Day Bottom Sheet ── */
-function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
-  const dayTxns = txns.filter(tx=>sameTxnDate(tx.date, dateKey));
-  const total = dayTxns.reduce((s,t)=>s+t.amount,0);
-  return (
-    <>
-      <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.38)",zIndex:200,backdropFilter:"blur(8px)"}}/>
-      <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(252,253,255,.88), rgba(238,244,255,.72))",zIndex:201,
-        borderRadius:"32px 32px 0 0",padding:"14px 24px 22px",
-        paddingBottom:"calc(22px + env(safe-area-inset-bottom, 0px))",
-        animation:"slideUp .28s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -18px 42px rgba(148,163,184,.18)",
-        border:"1px solid rgba(255,255,255,.92)",backdropFilter:"blur(24px)"}}>
-        <div style={{fontSize:16,fontWeight:600,color:"#64748B",marginBottom:6,marginTop:4}}>{formatDateHeader(dateKey)}</div>
-        <div style={{fontSize:28,fontWeight:800,color:"#1A1A2E",letterSpacing:"-.8px",marginBottom:18}}>₩{total.toLocaleString()}</div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-          <span style={{fontSize:13,color:"#94A3B8",fontWeight:600}}>사용 내역</span>
-          <span style={{fontSize:13,color:"#94A3B8"}}>{dayTxns.length}건</span>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:22,background:"rgba(255,255,255,.42)",borderRadius:20,padding:"0 2px",border:"1px solid rgba(255,255,255,.74)"}}>
-          {dayTxns.map((tx,i)=>(
-            <button key={tx.id} onClick={()=>{onEdit(tx);onClose();}}
-              style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"16px 14px",borderBottom:i<dayTxns.length-1?"1px solid rgba(226,232,240,.78)":"none",
-                background:"none",border:"none",cursor:"pointer",width:"100%",fontFamily:"inherit",
-                borderRadius:0}}>
-              <span style={{fontSize:15,fontWeight:600,color:"#1e1b4b"}}>{tx.merchant}</span>
-              <span style={{fontSize:14,fontWeight:700,color:"#475569"}}>₩{tx.amount.toLocaleString()}</span>
-            </button>
-          ))}
-        </div>
-        <button className="btn-press" onClick={onClose} style={{
-          width:"100%",padding:"16px",borderRadius:18,border:"1px solid rgba(255,255,255,.88)",cursor:"pointer",
-          background:"linear-gradient(150deg,#8B93FF,#6366F1)",color:"#fff",
-          fontSize:15,fontWeight:700,fontFamily:"inherit",
-          boxShadow:"0 16px 28px rgba(99,102,241,.22)"}}>
-          확인
-        </button>
-      </div>
-    </>
-  );
-}
-
-/* ── Form Page (Receipt / Gallery / Manual / Edit) ── */
-function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
-  const titleMap = {camera:"영수증 촬영", gallery:"사진 업로드", manual:"직접 등록", edit:"내역 수정"};
-  const title = titleMap[source] || "입력";
-  const isManualForm = source==="manual" || (source==="edit" && !preview);
-  const showsImageArea = source==="camera" || source==="gallery" || (source==="edit" && !!preview);
-  const headerButtonStyle = isManualForm
-    ? {
-        width:36,height:36,borderRadius:10,background:"transparent",border:"none",
-        boxShadow:"none"
-      }
-    : {
-        width:24,height:24,borderRadius:0,background:"transparent",border:"none",boxShadow:"none"
-      };
-  const formCardStyle = isManualForm
-    ? {
-        margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",
-        borderRadius:16,padding:"20px",boxShadow:"0 12px 30px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.9)"
-      }
-    : {
-        margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",
-        borderRadius:16,padding:"20px",boxShadow:"0 16px 34px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.92)"
-      };
-
-  return (
-    <div style={{position:"fixed",inset:0,width:"100vw",minHeight:"100dvh",background:"radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
-      zIndex:300,maxWidth:"none",margin:0,overflowY:"auto",paddingBottom:100,backgroundRepeat:"no-repeat",backgroundAttachment:"fixed"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:`${isManualForm?52:58}px 20px 16px`}}>
-        <button className="btn-press" onClick={()=>window.history.back()} style={{
-          ...headerButtonStyle,
-          display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-        </button>
-        <div style={{fontSize:isManualForm?17:18,fontWeight:700,color:"#1A1A2E",lineHeight:1}}>{title}</div>
-      </div>
-
-      {/* Photo area */}
-      {showsImageArea&&(
-        <div style={{margin:"0 20px 16px"}}>
-          {preview?(
-            <div className="glass-panel" style={{width:"100%",height:200,borderRadius:16,overflow:"hidden",boxShadow:"0 16px 36px rgba(148,163,184,.14)",border:"1.5px solid #E2E8F0"}}>
-              <img src={preview} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-            </div>
-          ):(
-            <div className="glass-panel" style={{width:"100%",height:200,borderRadius:16,background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.60))",
-              border:"1.5px solid #E2E8F0",display:"flex",flexDirection:"column",
-              alignItems:"center",justifyContent:"center",gap:12,boxShadow:"0 16px 36px rgba(148,163,184,.14)"}}>
-              <IcCamera color="#94A3B8" size={34}/>
-              <div style={{fontSize:13,color:"#94A3B8",fontWeight:500}}>사진을 촬영하거나 업로드하세요</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* OCR result */}
-      {source==="camera"&&ocrRes?.amount&&(
-        <div style={{margin:"0 20px 12px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:14,padding:"12px 16px"}}>
-          <div style={{fontSize:11,color:"#10B981",fontWeight:700,marginBottom:2}}>✓ 자동 인식 완료</div>
-          <div style={{fontSize:20,fontWeight:800,color:"#1e1b4b"}}>{ocrRes.amount.toLocaleString()}원</div>
-        </div>
-      )}
-      {source==="camera"&&ocrRes&&!ocrRes.amount&&(
-        <div style={{margin:"0 20px 12px",background:"#FFF5F5",border:"1px solid #FED7D7",borderRadius:14,padding:"12px 16px",fontSize:13,color:"#EF4444"}}>
-          인식 실패 — 아래에 직접 입력해주세요
-        </div>
-      )}
-
-      {/* Form card */}
-      <div className="glass-panel" style={formCardStyle}>
-        <FormInput label="결제 금액"
-          value={form.amount ? parseInt(form.amount,10).toLocaleString() : ""}
-          onChange={v=>setForm(f=>({...f,amount:v.replace(/[^0-9]/g,"")}))}
-          placeholder="₩ 0"/>
-        <FormInput label="사용 날짜"
-          type="date"
-          value={toYMD(form.date)}
-          onChange={v=>setForm(f=>({...f,date:fromYMD(v)}))}/>
-        <FormInput label="가맹점명"
-          value={form.merchant}
-          onChange={v=>setForm(f=>({...f,merchant:v}))}
-          placeholder="가맹점 이름을 입력해 주세요."/>
-      </div>
-
-      <FixedConfirmBtn onClick={onSubmit}/>
-    </div>
-  );
-}
 
 /* ── Loading Screen ── */
 const LoadingScreen = ({preview}) => (
@@ -611,7 +254,8 @@ export default function App() {
         });
       }
     });
-    supabase.auth.onAuthStateChange((_,session)=>setUser(session?.user||null));
+    const { data: authListener } = supabase.auth.onAuthStateChange((_,session)=>setUser(session?.user||null));
+    return ()=>authListener?.subscription?.unsubscribe();
   },[]);
 
   useEffect(()=>{
@@ -661,8 +305,6 @@ export default function App() {
   }).sort((a,b)=>(toWindowedDate(b.date)?.getTime()||0)-(toWindowedDate(a.date)?.getTime()||0));
   const used=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
   const remaining=LIMIT-used;
-  const pct=Math.min(100,(used/LIMIT)*100);
-  const pc=pctColor(pct);
 
   // Date-grouped for home list
   const groupedTxns={};
@@ -672,15 +314,6 @@ export default function App() {
     groupedTxns[k].push(tx);
   });
   const sortedDateKeys=Object.keys(groupedTxns).sort((a,b)=>(toWindowedDate(b)?.getTime()||0)-(toWindowedDate(a)?.getTime()||0));
-
-  const getDailyBudget=()=>{
-    const hd=new Holidays('KR');const today=new Date();
-    const year=today.getFullYear(),month=today.getMonth();
-    const lastDay=new Date(year,month+1,0).getDate();
-    let wdl=0;
-    for(let d=today.getDate();d<=lastDay;d++){const dt=new Date(year,month,d);const dow=dt.getDay();if(dow!==0&&dow!==6&&!hd.isHoliday(dt)) wdl++;}
-    return wdl>0?Math.round(remaining/wdl):0;
-  };
 
   const saveRecs=async n=>{setRecs(n);await S.set(`recs-${mKey()}`,n);};
 
@@ -789,225 +422,16 @@ export default function App() {
     </div>
   );
 
-  /* ── HOME ── */
-  const renderHome=()=>{
-    const dailyBudget=getDailyBudget();
-    const homeMonthNavBtn={
-      background:"none",border:"none",cursor:"pointer",width:24,height:24,padding:0,
-      display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500
-    };
-    return (
-      <div style={{position:"relative",zIndex:1}}>
-        <div style={{padding:"52px 20px 0"}}>
-          {/* Hero Card */}
-          <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58))",borderRadius:24,padding:"22px",boxShadow:"0 18px 40px rgba(99,102,241,.12)",marginBottom:14}}>
-            <div style={{display:"flex",alignItems:"stretch",justifyContent:"space-between",gap:16}}>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,color:"#94A3B8",marginBottom:4,fontWeight:500}}>이번 달 잔액</div>
-                <div style={{fontSize:36,fontWeight:900,letterSpacing:"-1.5px",color:"#1e1b4b",lineHeight:1.1,marginBottom:6}}>
-                  ₩{remaining.toLocaleString()}
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:2}}>
-                  <div style={{alignSelf:"flex-start",background:"#EEF2FF",borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:600,color:"#6366F1",whiteSpace:"nowrap"}}>
-                    일일 사용 가능 금액 ₩{dailyBudget.toLocaleString()}
-                  </div>
-                  <div style={{alignSelf:"flex-start",background:pct>=90?"#FEF2F2":pct>=70?"#FFFBEB":"#F0FDF4",borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:600,color:pc}}>
-                    사용률 {Math.round(pct)}%
-                  </div>
-                </div>
-              </div>
-              <div style={{width:110,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-                <CardSVG width={102} height={95}/>
-              </div>
-            </div>
-          </div>
-
-          {/* Toggle */}
-          <div className="glass-soft" style={{background:"rgba(255,255,255,.62)",borderRadius:14,padding:"4px",boxShadow:"0 12px 28px rgba(99,102,241,.10)",display:"flex",marginBottom:16}}>
-            {[{id:"list",label:"리스트"},{id:"calendar",label:"달력"}].map(({id,label})=>(
-              <button key={id} className="btn-press" onClick={()=>setHomeView(id)} style={{
-                flex:1,padding:"10px",borderRadius:10,border:"none",cursor:"pointer",
-                fontSize:14,fontWeight:homeView===id?700:500,
-                background:homeView===id?"linear-gradient(150deg,#7C83FF,#6366F1)":"transparent",
-                color:homeView===id?"#FFFFFF":"#64748B",transition:"all .2s",fontFamily:"inherit"}}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 16px"}}>
-            <button className="btn-press" onClick={()=>canGoPrevHomeMonth&&setHomeMonthOffset(v=>Math.min(2,v+1))} disabled={!canGoPrevHomeMonth} style={{...homeMonthNavBtn,opacity:canGoPrevHomeMonth?1:.32,cursor:canGoPrevHomeMonth?"pointer":"default"}}>‹</button>
-            <div style={{fontSize:16,fontWeight:700,color:"#1A1A2E"}}>{homeMonthLabel}</div>
-            <button className="btn-press" onClick={()=>canGoNextHomeMonth&&setHomeMonthOffset(v=>Math.max(0,v-1))} disabled={!canGoNextHomeMonth} style={{...homeMonthNavBtn,opacity:canGoNextHomeMonth?1:.32,cursor:canGoNextHomeMonth?"pointer":"default"}}>›</button>
-          </div>
-        </div>
-
-        {/* List View */}
-        {homeView==="list"&&(
-          <div style={{padding:"0 20px 20px"}}>
-            {homeMonthTxns.length===0&&(
-              <div style={{textAlign:"center",padding:"56px 0"}}>
-                <div style={{fontSize:40,marginBottom:12}}>🍽</div>
-                <div style={{fontSize:14,fontWeight:600,color:"#64748B"}}>아직 기록이 없어요</div>
-                <div style={{fontSize:12,color:"#94A3B8",marginTop:6}}>+ 버튼으로 추가해봐요</div>
-              </div>
-            )}
-            {sortedDateKeys.map(dateKey=>{
-              const group=groupedTxns[dateKey];
-              const dayTotal=group.reduce((s,t)=>s+t.amount,0);
-              return (
-                <div key={dateKey} style={{marginBottom:8,overflow:"visible"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"#F8FAFC",borderRadius:8,marginBottom:2}}>
-                    <span style={{fontSize:13,fontWeight:700,color:"#1A1A2E"}}>{formatDateHeader(dateKey)}</span>
-                    <span style={{fontSize:13,color:"#EF4444"}}>₩{dayTotal.toLocaleString()}</span>
-                  </div>
-                  <div style={{padding:"0 8px"}}>
-                    {group.map((tx,i)=>(
-                      <div key={tx.id} className="tx-row fu" onClick={()=>openEdit(tx)} style={{
-                        display:"flex",alignItems:"center",gap:8,minHeight:48,padding:"0 0",
-                        borderBottom:i<group.length-1?"1px solid #F1F5F9":"none",cursor:"pointer",borderRadius:0}}>
-                        <div style={{flex:1,minWidth:0,textAlign:"left"}}>
-                          <div style={{fontSize:14,fontWeight:400,color:"#1A1A2E",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
-                        </div>
-                        <div style={{fontSize:14,fontWeight:400,color:"#1A1A2E",flexShrink:0,textAlign:"right"}}>₩{tx.amount.toLocaleString()}</div>
-                        <button onClick={e=>{e.stopPropagation();delTxn(tx.id);}} style={{
-                          background:"none",border:"none",cursor:"pointer",color:"#CBD5E1",fontSize:16,lineHeight:1,padding:"0 0 0 8px",flexShrink:0}}>×</button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Calendar View */}
-        {homeView==="calendar"&&(
-          <div style={{padding:"0 20px 20px"}}>
-            <CalendarView txns={homeMonthTxns} monthDate={homeMonthDate} selectedDate={calDaySheet} onDayPress={(dateKey)=>setCalDaySheet(dateKey)}/>
-          </div>
-        )}
-      </div>
-    );
+  const saveProject = async()=>{
+    const{data:{user:u}}=await supabase.auth.getUser();
+    await US.save(cfg,u.id);
+    setOpenSection(null);
+    ping("저장됐어요");
   };
-
-  /* ── GALLERY ── */
-  const renderGallery=()=>{
-    const galleryTxns=filteredTxns.filter(t=>recs[t.id]);
-    const totalAmt=filteredTxns.reduce((s,t)=>s+t.amount,0);
-    return (
-      <div style={{position:"relative",zIndex:1,padding:"52px 20px 0"}}>
-        {/* Month nav */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 0 8px",marginBottom:4}}>
-          <button className="btn-press" onClick={()=>canGoPrevGalleryMonth&&setGalleryFilter(f=>Math.min(2,f+1))} disabled={!canGoPrevGalleryMonth} style={{
-            background:"none",border:"none",cursor:canGoPrevGalleryMonth?"pointer":"default",width:28,height:28,padding:0,
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:28,fontWeight:400,opacity:canGoPrevGalleryMonth?1:.32}}>‹</button>
-          <div style={{fontSize:24,fontWeight:700,color:"#1A1A2E",letterSpacing:"-.4px",lineHeight:1.2}}>{filterLabel}</div>
-          <button className="btn-press" onClick={()=>canGoNextGalleryMonth&&setGalleryFilter(f=>Math.max(0,f-1))} disabled={!canGoNextGalleryMonth} style={{
-            background:"none",border:"none",cursor:canGoNextGalleryMonth?"pointer":"default",width:28,height:28,padding:0,
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:28,fontWeight:400,opacity:canGoNextGalleryMonth?1:.32}}>›</button>
-        </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,padding:"0 1px"}}>
-          <div style={{fontSize:14,color:"#94A3B8",fontWeight:500,lineHeight:1.35}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
-          {galleryTxns.length>0&&(
-            <button onClick={dlAll} className="btn-press" style={{
-              display:"flex",alignItems:"center",gap:5,padding:"0 14px",height:32,borderRadius:20,
-              background:"rgba(255,255,255,.36)",border:"1.5px solid #6366F1",color:"#6366F1",
-              fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"none",backdropFilter:"blur(10px)"}}>
-              <IcDownload/>전체 다운로드
-            </button>
-          )}
-        </div>
-
-        {galleryTxns.length>0?(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,paddingBottom:8}}>
-            {galleryTxns.map(tx=>(
-              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",borderRadius:16,overflow:"hidden",position:"relative",boxShadow:"0 10px 24px rgba(148,163,184,.10)",border:"1px solid rgba(255,255,255,.84)"}}>
-                <div style={{position:"relative",borderRadius:"16px 16px 0 0",overflow:"hidden"}}>
-                    <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
-                      style={{width:"100%",height:140,objectFit:"cover",display:"block",cursor:"pointer"}}/>
-                </div>
-                <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
-                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:14,
-                  background:"rgba(255,255,255,.80)",border:"1px solid rgba(255,255,255,.92)",
-                  color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",fontWeight:700,letterSpacing:"0",boxShadow:"0 6px 14px rgba(148,163,184,.10)",backdropFilter:"blur(8px)"}}>⋯</button>
-                <div style={{padding:"12px 12px 14px"}}>
-                  <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{tx.merchant}</div>
-                  <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:4}}>₩{tx.amount.toLocaleString()}</div>
-                  <div style={{fontSize:11,color:"#94A3B8",marginTop:3}}>{formatStoredDate(tx.date,currentServerMonthDate)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ):(
-          <div style={{textAlign:"center",padding:"64px 0",color:"#94A3B8"}}>
-            <div style={{fontSize:14,fontWeight:500}}>저장된 영수증이 없어요</div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  /* ── SETTINGS ── */
-  const renderSettings=()=>{
-    const initial=(user?.email||"?")[0].toUpperCase();
-    const name=user?.email?.split("@")[0]||"";
-    const rowS={width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 16px",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"};
-    const iconBox=(c)=>({width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",background:`${c}12`,border:`1px solid ${c}25`});
-    return (
-      <div style={{padding:"52px 20px 40px",position:"relative",zIndex:1}}>
-        <div style={{fontSize:22,fontWeight:800,color:"#1e1b4b",marginBottom:20,textAlign:"left"}}>설정</div>
-        <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",borderRadius:24,padding:"20px",marginBottom:24,boxShadow:"0 18px 40px rgba(99,102,241,.12)",display:"flex",alignItems:"center",gap:16}}>
-          <div style={{width:56,height:56,borderRadius:18,flexShrink:0,background:"linear-gradient(150deg,#818CF8,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(99,102,241,.3)"}}>
-            <span style={{fontSize:22,fontWeight:800,color:"#fff"}}>{initial}</span>
-          </div>
-          <div>
-            <div style={{fontSize:16,fontWeight:700,color:"#1e1b4b"}}>{name}</div>
-            <div style={{fontSize:12,color:"#94A3B8",marginTop:2}}>{user?.email}</div>
-          </div>
-        </div>
-
-        <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>프로젝트 설정</div>
-        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
-          <button onClick={()=>setOpenSection(openSection==="project"?null:"project")} style={{...rowS,borderBottom:openSection==="project"?"1px solid #F1F5F9":"none"}}>
-            <div style={iconBox("#6366F1")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20l-6-4z"/></svg></div>
-            <div style={{flex:1,textAlign:"left"}}>
-              <div style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>프로젝트명</div>
-              <div style={{fontSize:12,color:"#94A3B8",marginTop:1}}>{cfg.projectName||"미설정"}</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-          {openSection==="project"&&(
-            <div style={{padding:"12px 16px 16px"}}>
-              <FormInput value={cfg.projectName} onChange={v=>setCfg(c=>({...c,projectName:v}))} placeholder="우리 가계부"/>
-              <div style={{display:"flex",gap:8,marginTop:4}}>
-                <button className="btn-press" onClick={()=>setOpenSection(null)} style={{flex:1,padding:"11px",borderRadius:12,background:"#F1F5F9",border:"none",color:"#64748B",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>취소</button>
-                <button className="btn-press" onClick={async()=>{const{data:{user:u}}=await supabase.auth.getUser();await US.save(cfg,u.id);setOpenSection(null);ping("저장됐어요");}} style={{flex:1,padding:"11px",borderRadius:12,background:"linear-gradient(150deg,#818CF8,#6366F1)",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>저장</button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>데이터 관리</div>
-        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
-          <button onClick={()=>exportXlsx(txns,cfg.projectName)} style={rowS}>
-            <div style={iconBox("#10B981")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="11"/><polyline points="9 15 12 18 15 15"/></svg></div>
-            <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>액셀 다운로드</div></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-
-        <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:".6px",textTransform:"uppercase",marginBottom:8}}>계정</div>
-        <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.56))",borderRadius:20,overflow:"hidden",marginBottom:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.88)"}}>
-          <button onClick={()=>{supabase.auth.signOut();setUser(null);setTxns([]);}} style={rowS}>
-            <div style={iconBox("#EF4444")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
-            <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:500,color:"#EF4444"}}>로그아웃</div></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-        <div style={{textAlign:"center",marginTop:12}}><p style={{color:"#CBD5E1",fontSize:11}}>ExpenseFlow v1.0.0 · © 2026</p></div>
-      </div>
-    );
+  const logout = async()=>{
+    await supabase.auth.signOut();
+    setUser(null);
+    setTxns([]);
   };
 
   const changeTab=(t)=>{if(t!==tab) window.history.pushState({tab:t},"");setTab(t);setFab(false);};
@@ -1019,22 +443,17 @@ export default function App() {
 
       {/* Calendar Day Sheet */}
       {calDaySheet&&(
-        <CalendarDaySheet dateKey={calDaySheet} txns={homeMonthTxns} recs={recs} onClose={()=>setCalDaySheet(null)} onEdit={openEdit}/>
+        <CalendarDaySheet dateKey={calDaySheet} txns={homeMonthTxns} onClose={()=>setCalDaySheet(null)} onEdit={openEdit}/>
       )}
 
       {/* Gallery bottom sheet */}
       {galleryBottomSheet&&(
-        <>
-          <div onClick={()=>setGalleryBS(null)} style={{position:"fixed",inset:0,zIndex:300,background:"rgba(26,26,46,.35)",backdropFilter:"blur(8px)"}}/>
-          <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,
-            background:"linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.70))",borderRadius:"24px 24px 0 0",padding:"12px 20px",
-            paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-            zIndex:301,animation:"slideUp .22s ease",boxShadow:"0 -20px 44px rgba(99,102,241,.14)"}}>
-            <div style={{fontSize:14,fontWeight:600,color:"#94A3B8",marginBottom:14,marginTop:4,textAlign:"center"}}>{galleryBottomSheet.merchant}</div>
-            <button onClick={()=>{openEdit(galleryBottomSheet);}} style={{width:"100%",padding:"15px",borderRadius:16,background:"#EEF2FF",border:"none",color:"#6366F1",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>수정</button>
-            <button onClick={()=>{delTxn(galleryBottomSheet.id);setGalleryBS(null);}} style={{width:"100%",padding:"15px",borderRadius:16,background:"#FFF5F5",border:"none",color:"#EF4444",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>삭제</button>
-          </div>
-        </>
+        <GalleryBottomSheet
+          tx={galleryBottomSheet}
+          onClose={()=>setGalleryBS(null)}
+          onEdit={()=>openEdit(galleryBottomSheet)}
+          onDelete={()=>{delTxn(galleryBottomSheet.id);setGalleryBS(null);}}
+        />
       )}
 
       {/* FAB menu overlay */}
@@ -1043,12 +462,61 @@ export default function App() {
       {/* Overlay pages */}
       {overlay==="loading"&&<LoadingScreen preview={preview}/>}
       {overlay==="form"&&(
-        <FormPage source={overlaySource} preview={preview} ocrRes={ocrRes} form={form} setForm={setForm} onSubmit={handleSubmit} onBack={closeOv}/>
+        <FormPage source={overlaySource} preview={preview} ocrRes={ocrRes} form={form} setForm={setForm} onSubmit={handleSubmit}/>
       )}
 
-      {!overlay&&tab==="home"&&renderHome()}
-      {!overlay&&tab==="gallery"&&renderGallery()}
-      {!overlay&&tab==="settings"&&renderSettings()}
+      {!overlay&&tab==="home"&&(
+        <HomeScreen
+          txns={txns}
+          remaining={remaining}
+          used={used}
+          limit={LIMIT}
+          homeView={homeView}
+          setHomeView={setHomeView}
+          homeMonthLabel={homeMonthLabel}
+          canGoPrevHomeMonth={canGoPrevHomeMonth}
+          canGoNextHomeMonth={canGoNextHomeMonth}
+          onPrevMonth={()=>canGoPrevHomeMonth&&setHomeMonthOffset(v=>Math.min(2,v+1))}
+          onNextMonth={()=>canGoNextHomeMonth&&setHomeMonthOffset(v=>Math.max(0,v-1))}
+          homeMonthTxns={homeMonthTxns}
+          groupedTxns={groupedTxns}
+          sortedDateKeys={sortedDateKeys}
+          openEdit={openEdit}
+          delTxn={delTxn}
+          calDaySheet={calDaySheet}
+          setCalDaySheet={setCalDaySheet}
+          homeMonthDate={homeMonthDate}
+          HeroGraphic={<CardSVG width={102} height={95}/>}
+        />
+      )}
+      {!overlay&&tab==="gallery"&&(
+        <GalleryScreen
+          filteredTxns={filteredTxns}
+          recs={recs}
+          canGoPrevGalleryMonth={canGoPrevGalleryMonth}
+          canGoNextGalleryMonth={canGoNextGalleryMonth}
+          onPrevMonth={()=>canGoPrevGalleryMonth&&setGalleryFilter(f=>Math.min(2,f+1))}
+          onNextMonth={()=>canGoNextGalleryMonth&&setGalleryFilter(f=>Math.max(0,f-1))}
+          filterLabel={filterLabel}
+          onDownloadAll={dlAll}
+          onDownloadReceipt={dlRec}
+          onOpenItemMenu={setGalleryBS}
+          currentServerMonthDate={currentServerMonthDate}
+          DownloadIcon={IcDownload}
+        />
+      )}
+      {!overlay&&tab==="settings"&&(
+        <SettingsScreen
+          user={user}
+          cfg={cfg}
+          setCfg={setCfg}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+          onSaveProject={saveProject}
+          onExportXlsx={()=>exportXlsx(txns,cfg.projectName)}
+          onLogout={logout}
+        />
+      )}
 
       {/* FAB */}
       {!overlay&&tab!=="settings"&&(
