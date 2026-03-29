@@ -345,11 +345,10 @@ const FixedConfirmBtn = ({onClick,label="확인"}) => (
 );
 
 /* ── Calendar View ── */
-function CalendarView({txns, onDayPress}) {
-  const [calDate,setCalDate]=useState(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);});
-  const year=calDate.getFullYear(), month=calDate.getMonth();
+function CalendarView({txns, onDayPress, monthDate, selectedDate}) {
+  const year=monthDate.getFullYear(), month=monthDate.getMonth();
   const today=new Date();
-  const firstDay=calDate.getDay();
+  const firstDay=monthDate.getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
 
   const dayTotals={};
@@ -361,27 +360,20 @@ function CalendarView({txns, onDayPress}) {
 
   const hasTx=(day)=>!!dayTotals[day];
   const isToday=(day)=>day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+  const isSelected=(day)=>selectedDate===`${String(month+1).padStart(2,"0")}/${String(day).padStart(2,"0")}`;
 
   const cells=[];
   for(let i=0;i<firstDay;i++) cells.push(null);
   for(let i=1;i<=daysInMonth;i++) cells.push(i);
 
-  const navBtn={background:"none",border:"none",cursor:"pointer",width:36,height:36,borderRadius:"50%",
-    display:"flex",alignItems:"center",justifyContent:"center",color:"#64748B",fontSize:20,fontWeight:700};
-
   return (
-    <div style={{padding:"0 20px 20px"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <button style={navBtn} onClick={()=>setCalDate(new Date(year,month-1,1))}>‹</button>
-        <span style={{fontSize:16,fontWeight:700,color:"#1e1b4b"}}>{year}년 {month+1}월</span>
-        <button style={navBtn} onClick={()=>setCalDate(new Date(year,month+1,1))}>›</button>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",textAlign:"center",marginBottom:6}}>
+    <div style={{padding:"0 4px 8px"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",textAlign:"center",marginBottom:12}}>
         {["일","월","화","수","목","금","토"].map((d,i)=>(
-          <div key={d} style={{fontSize:11,color:i===0?"#EF4444":i===6?"#6366F1":"#94A3B8",padding:"4px 0",fontWeight:500}}>{d}</div>
+          <div key={d} style={{fontSize:11,color:"#94A3B8",padding:"4px 0",fontWeight:500}}>{d}</div>
         ))}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",rowGap:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",rowGap:14}}>
         {cells.map((day,i)=>(
           <div key={i} style={{minHeight:52,textAlign:"center",cursor:day&&hasTx(day)?"pointer":"default"}}
             onClick={()=>day&&hasTx(day)&&onDayPress(`${String(month+1).padStart(2,"0")}/${String(day).padStart(2,"0")}`)}>
@@ -389,15 +381,15 @@ function CalendarView({txns, onDayPress}) {
               <>
                 <div style={{
                   width:30,height:30,borderRadius:"50%",margin:"0 auto",
-                  background:isToday(day)?"#6366F1":hasTx(day)?"#E0E7FF":"transparent",
+                  background:isToday(day)?"#6366F1":isSelected(day)?"rgba(99,102,241,.12)":"transparent",
                   display:"flex",alignItems:"center",justifyContent:"center",
-                  color:isToday(day)?"#fff":hasTx(day)?"#4F46E5":i%7===0?"#EF4444":i%7===6?"#6366F1":"#1e1b4b",
-                  fontSize:13,fontWeight:isToday(day)||hasTx(day)?700:400,
+                  color:isToday(day)?"#fff":"#1A1A2E",
+                  fontSize:13,fontWeight:500,
                 }}>
                   {day}
                 </div>
-                <div style={{height:13,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-                  {hasTx(day)&&<span style={{fontSize:8,color:"#6366F1",fontWeight:600,whiteSpace:"nowrap"}}>₩{dayTotals[day].toLocaleString()}</span>}
+                <div style={{height:16,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",marginTop:2}}>
+                  {hasTx(day)&&<span style={{fontSize:9,color:"#6366F1",fontWeight:500,whiteSpace:"nowrap"}}>₩{dayTotals[day].toLocaleString()}</span>}
                 </div>
               </>
             )}
@@ -416,25 +408,25 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
     <>
       <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.38)",zIndex:200,backdropFilter:"blur(8px)"}}/>
       <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.70))",zIndex:201,
+        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",zIndex:201,
         borderRadius:"24px 24px 0 0",padding:"12px 20px",
         paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -20px 44px rgba(99,102,241,.14)"}}>
-        <div style={{width:36,height:4,borderRadius:99,background:"#E2E8F0",margin:"0 auto 20px"}}/>
-        <div style={{fontSize:17,fontWeight:700,color:"#1e1b4b",marginBottom:4}}>{formatDateHeader(dateKey)}</div>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:16,paddingBottom:12,borderBottom:"1px solid #F1F5F9"}}>
+        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -18px 40px rgba(99,102,241,.10)"}}>
+        <div style={{width:36,height:4,borderRadius:99,background:"rgba(148,163,184,.45)",margin:"0 auto 20px"}}/>
+        <div style={{fontSize:18,fontWeight:700,color:"#1e1b4b",marginBottom:8}}>{formatDateHeader(dateKey)}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:16,paddingBottom:12,borderBottom:"1px solid rgba(241,245,249,.75)"}}>
           <span style={{fontSize:13,color:"#94A3B8"}}>{dayTxns.length}건</span>
-          <span style={{fontSize:13,fontWeight:700,color:"#1e1b4b"}}>₩{total.toLocaleString()}</span>
+          <span style={{fontSize:15,fontWeight:700,color:"#EF4444"}}>₩{total.toLocaleString()}</span>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:20}}>
           {dayTxns.map((tx,i)=>(
             <button key={tx.id} onClick={()=>{onEdit(tx);onClose();}}
               style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"14px 0",borderBottom:i<dayTxns.length-1?"1px solid #F8F8FF":"none",
+                padding:"14px 0",borderBottom:i<dayTxns.length-1?"1px solid rgba(248,250,252,.8)":"none",
                 background:"none",border:"none",cursor:"pointer",width:"100%",fontFamily:"inherit",
                 borderRadius:0}}>
               <span style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>{tx.merchant}</span>
-              <span style={{fontSize:14,fontWeight:600,color:"#EF4444"}}>-₩{tx.amount.toLocaleString()}</span>
+              <span style={{fontSize:14,fontWeight:600,color:"#1A1A2E"}}>₩{tx.amount.toLocaleString()}</span>
             </button>
           ))}
         </div>
@@ -571,6 +563,7 @@ export default function App() {
   const [toast,setToast]=useState(null);
   const [user,setUser]=useState(null);
   const [galleryFilter,setGalleryFilter]=useState(0);
+  const [homeMonthOffset,setHomeMonthOffset]=useState(0);
   const [openSection,setOpenSection]=useState(null);
   const [galleryBottomSheet,setGalleryBS]=useState(null); // tx
   const [calDaySheet,setCalDaySheet]=useState(null);      // "MM/DD"
@@ -605,10 +598,29 @@ export default function App() {
     return()=>window.removeEventListener("popstate",onBack);
   },[overlay,tab]);
 
+  useEffect(()=>{
+    setCalDaySheet(null);
+  },[homeMonthOffset]);
+
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
 
   // Derived data
+  const currentServerDate=new Date();
+  const currentServerMonthDate=new Date(currentServerDate.getFullYear(),currentServerDate.getMonth(),1);
+  const getDisplayMonthDate=(offset=0)=>new Date(currentServerMonthDate.getFullYear(),currentServerMonthDate.getMonth()-offset,1);
+  const toWindowedDate=(dateStr)=>{
+    if(!dateStr) return null;
+    const [mm,dd]=dateStr.split("/").map(Number);
+    if(!mm||!dd) return null;
+    let year=currentServerMonthDate.getFullYear();
+    if(mm>currentServerMonthDate.getMonth()+1) year-=1;
+    return new Date(year,mm-1,dd);
+  };
   const filterLabel=monthLabel(galleryFilter);
+  const homeMonthDate=getDisplayMonthDate(homeMonthOffset);
+  const homeMonthLabel=`${homeMonthDate.getFullYear()}년 ${homeMonthDate.getMonth()+1}월`;
+  const canGoPrevHomeMonth=homeMonthOffset<2;
+  const canGoNextHomeMonth=homeMonthOffset>0;
   const filteredTxns=txns.filter(tx=>{
     if(!tx.date) return galleryFilter===0;
     const [mm]=tx.date.split("/");
@@ -618,6 +630,10 @@ export default function App() {
 
   const thisMonthTxns=txns.filter(t=>{const[mm]=(t.date||"").split("/");return parseInt(mm)===new Date().getMonth()+1;})
     .sort((a,b)=>{const[am,ad]=(a.date||"").split("/");const[bm,bd]=(b.date||"").split("/");return(parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
+  const homeMonthTxns=txns.filter(tx=>{
+    const txDate=toWindowedDate(tx.date);
+    return txDate && txDate.getFullYear()===homeMonthDate.getFullYear() && txDate.getMonth()===homeMonthDate.getMonth();
+  }).sort((a,b)=>(toWindowedDate(b.date)?.getTime()||0)-(toWindowedDate(a.date)?.getTime()||0));
   const used=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
   const remaining=LIMIT-used;
   const pct=Math.min(100,(used/LIMIT)*100);
@@ -625,8 +641,8 @@ export default function App() {
 
   // Date-grouped for home list
   const groupedTxns={};
-  thisMonthTxns.forEach(tx=>{const k=tx.date||"미상";if(!groupedTxns[k])groupedTxns[k]=[];groupedTxns[k].push(tx);});
-  const sortedDateKeys=Object.keys(groupedTxns).sort((a,b)=>{const[am,ad]=a.split("/");const[bm,bd]=b.split("/");return(parseInt(bm)*100+parseInt(bd))-(parseInt(am)*100+parseInt(ad));});
+  homeMonthTxns.forEach(tx=>{const k=tx.date||"미상";if(!groupedTxns[k])groupedTxns[k]=[];groupedTxns[k].push(tx);});
+  const sortedDateKeys=Object.keys(groupedTxns).sort((a,b)=>(toWindowedDate(b)?.getTime()||0)-(toWindowedDate(a)?.getTime()||0));
 
   const getDailyBudget=()=>{
     const hd=new Holidays('KR');const today=new Date();
@@ -747,6 +763,10 @@ export default function App() {
   /* ── HOME ── */
   const renderHome=()=>{
     const dailyBudget=getDailyBudget();
+    const homeMonthNavBtn={
+      background:"none",border:"none",cursor:"pointer",width:24,height:24,padding:0,
+      display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500
+    };
     return (
       <div style={{position:"relative",zIndex:1}}>
         <div style={{padding:"52px 20px 0"}}>
@@ -783,12 +803,17 @@ export default function App() {
               </button>
             ))}
           </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 16px"}}>
+            <button className="btn-press" onClick={()=>canGoPrevHomeMonth&&setHomeMonthOffset(v=>Math.min(2,v+1))} disabled={!canGoPrevHomeMonth} style={{...homeMonthNavBtn,opacity:canGoPrevHomeMonth?1:.32,cursor:canGoPrevHomeMonth?"pointer":"default"}}>‹</button>
+            <div style={{fontSize:16,fontWeight:700,color:"#1A1A2E"}}>{homeMonthLabel}</div>
+            <button className="btn-press" onClick={()=>canGoNextHomeMonth&&setHomeMonthOffset(v=>Math.max(0,v-1))} disabled={!canGoNextHomeMonth} style={{...homeMonthNavBtn,opacity:canGoNextHomeMonth?1:.32,cursor:canGoNextHomeMonth?"pointer":"default"}}>›</button>
+          </div>
         </div>
 
         {/* List View */}
         {homeView==="list"&&(
           <div style={{padding:"0 20px 20px"}}>
-            {thisMonthTxns.length===0&&(
+            {homeMonthTxns.length===0&&(
               <div style={{textAlign:"center",padding:"56px 0"}}>
                 <div style={{fontSize:40,marginBottom:12}}>🍽</div>
                 <div style={{fontSize:14,fontWeight:600,color:"#64748B"}}>아직 기록이 없어요</div>
@@ -827,9 +852,7 @@ export default function App() {
         {/* Calendar View */}
         {homeView==="calendar"&&(
           <div style={{padding:"0 20px 20px"}}>
-            <div className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",borderRadius:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",padding:"16px 4px",border:"1px solid rgba(255,255,255,.86)"}}>
-              <CalendarView txns={txns} onDayPress={(dateKey)=>setCalDaySheet(dateKey)}/>
-            </div>
+            <CalendarView txns={homeMonthTxns} monthDate={homeMonthDate} selectedDate={calDaySheet} onDayPress={(dateKey)=>setCalDaySheet(dateKey)}/>
           </div>
         )}
       </div>
@@ -964,7 +987,7 @@ export default function App() {
 
       {/* Calendar Day Sheet */}
       {calDaySheet&&(
-        <CalendarDaySheet dateKey={calDaySheet} txns={txns} recs={recs} onClose={()=>setCalDaySheet(null)} onEdit={openEdit}/>
+        <CalendarDaySheet dateKey={calDaySheet} txns={homeMonthTxns} recs={recs} onClose={()=>setCalDaySheet(null)} onEdit={openEdit}/>
       )}
 
       {/* Gallery bottom sheet */}
