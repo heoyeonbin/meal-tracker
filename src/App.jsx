@@ -28,7 +28,14 @@ if (!document.querySelector("#css3")) {
     input,button,textarea{font-family:'Noto Sans KR',sans-serif}
     button{transition:transform .18s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease}
     input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-    input[type=date]::-webkit-calendar-picker-indicator{opacity:0.35;cursor:pointer}
+    input[type=date]{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 14px center;
+      background-size:18px;
+      padding-right:44px!important;
+    }
+    input[type=date]::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer}
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -453,10 +460,10 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
       };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
+    <div style={{position:"fixed",inset:0,background:"radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
       zIndex:300,maxWidth:430,margin:"0 auto",overflowY:"auto",paddingBottom:100}}>
       <div style={{display:"flex",alignItems:"center",gap:10,padding:`${isManualForm?52:58}px 20px 16px`}}>
-        <button className="btn-press" onClick={onBack} style={{
+        <button className="btn-press" onClick={()=>window.history.back()} style={{
           ...headerButtonStyle,
           display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
           <svg width={isManualForm?18:22} height={isManualForm?18:22} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -571,10 +578,17 @@ export default function App() {
   },[]);
 
   useEffect(()=>{
-    const onBack=()=>{if(tab!=="home") setTab("home");};
+    window.history.replaceState({tab},"");
+    const onBack=()=>{
+      if(overlay){
+        closeOv();
+        return;
+      }
+      if(tab!=="home") setTab("home");
+    };
     window.addEventListener("popstate",onBack);
     return()=>window.removeEventListener("popstate",onBack);
-  },[tab]);
+  },[overlay,tab]);
 
   const ping=(msg,err=false)=>{setToast({msg,err});setTimeout(()=>setToast(null),2400);};
 
@@ -610,9 +624,16 @@ export default function App() {
 
   const saveRecs=async n=>{setRecs(n);await S.set(`recs-${mKey()}`,n);};
 
-  const closeOv=()=>{setOv(null);setPv(null);setOcr(null);setForm({amount:"",merchant:"",date:""});setOvSrc(null);setEditTarget(null);};
+  const closeOv=()=>{
+    if(window.history.state?.overlayOpen){
+      window.history.replaceState({tab},"");
+    }
+    setOv(null);setPv(null);setOcr(null);setForm({amount:"",merchant:"",date:""});setOvSrc(null);setEditTarget(null);
+  };
+  const pushOverlayHistory=()=>window.history.pushState({tab,overlayOpen:true},"");
 
   const openEdit=(tx)=>{
+    pushOverlayHistory();
     setEditTarget(tx);
     setForm({amount:String(tx.amount),merchant:tx.merchant||"",date:tx.date||""});
     setPv(recs[tx.id]||null);
@@ -624,6 +645,7 @@ export default function App() {
 
   const handleFile=useCallback(async(file,src="camera")=>{
     if(!file) return; setFab(false);
+    pushOverlayHistory();
     const reader=new FileReader();
     reader.onload=async e=>{
       const url=e.target.result; setPv(url); setOv("loading"); setOvSrc(src);
@@ -967,7 +989,7 @@ export default function App() {
               {[
                 {Icon:IcCamera,label:"영수증 촬영",fn:()=>camRef.current?.click()},
                 {Icon:IcImage,label:"사진 업로드",fn:()=>galRef.current?.click()},
-                {Icon:IcPencil,label:"직접 등록",fn:()=>{setForm({amount:"",merchant:"",date:todayMD()});setOvSrc("manual");setOv("form");setFab(false);}},
+                {Icon:IcPencil,label:"직접 등록",fn:()=>{pushOverlayHistory();setForm({amount:"",merchant:"",date:todayMD()});setOvSrc("manual");setOv("form");setFab(false);}},
               ].map((opt,i)=>(
                 <button key={opt.label} onClick={()=>{opt.fn();setFab(false);}} className="btn-press glass-soft" style={{
                   display:"flex",alignItems:"center",gap:10,background:"linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72))",
