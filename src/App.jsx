@@ -765,9 +765,9 @@ export default function App() {
   /* ── LOGIN ── */
   if(!user) return (
     <div style={{...bgStyle,display:"flex",flexDirection:"column",paddingBottom:0,minHeight:"100dvh"}}>
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px 20px",textAlign:"center"}}>
-        <CardSVG size={100}/>
-        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:"#1e1b4b",marginTop:24,marginBottom:8}}>Welcome Back</div>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"36px 20px 18px",textAlign:"center"}}>
+        <CardSVG size={124}/>
+        <div style={{fontSize:28,fontWeight:900,letterSpacing:"-1px",color:"#1e1b4b",marginTop:18,marginBottom:8}}>Welcome Back</div>
         <div style={{fontSize:14,color:"#94A3B8"}}>Sign in with your Google account</div>
       </div>
       <div style={{padding:"0 24px calc(40px + env(safe-area-inset-bottom,0px)) 24px"}}>
@@ -816,14 +816,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <div style={{width:108,flexShrink:0,borderRadius:24,padding:"14px 10px 10px",display:"flex",alignItems:"center",justifyContent:"center",
-                background:"linear-gradient(180deg, rgba(255,255,255,.92), rgba(226,236,255,.68))",
-                border:"1px solid rgba(255,255,255,.94)",boxShadow:"inset 0 1px 0 rgba(255,255,255,.68), 0 14px 28px rgba(148,163,184,.14)",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:-18,right:-10,width:78,height:78,borderRadius:"50%",background:"rgba(129,140,248,.16)",filter:"blur(8px)"}}/>
-                <div style={{position:"absolute",bottom:-20,left:-12,width:84,height:84,borderRadius:"50%",background:"rgba(191,219,254,.28)",filter:"blur(10px)"}}/>
-                <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:"100%",height:"100%"}}>
-                  <CardSVG size={84}/>
-                </div>
+              <div style={{width:108,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                <CardSVG size={94}/>
               </div>
             </div>
           </div>
@@ -901,24 +895,24 @@ export default function App() {
     const galleryTxns=filteredTxns.filter(t=>recs[t.id]);
     const totalAmt=filteredTxns.reduce((s,t)=>s+t.amount,0);
     return (
-      <div style={{position:"relative",zIndex:1,padding:"48px 20px 0"}}>
+      <div style={{position:"relative",zIndex:1,padding:"52px 20px 0"}}>
         {/* Month nav */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 4px 8px",marginBottom:2}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 0 8px",marginBottom:4}}>
           <button className="btn-press" onClick={()=>canGoPrevGalleryMonth&&setGalleryFilter(f=>Math.min(2,f+1))} disabled={!canGoPrevGalleryMonth} style={{
-            background:"none",border:"none",cursor:canGoPrevGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoPrevGalleryMonth?1:.32}}>‹</button>
-          <div style={{fontSize:15,fontWeight:700,color:"#1A1A2E",letterSpacing:"-.2px"}}>{filterLabel}</div>
+            background:"none",border:"none",cursor:canGoPrevGalleryMonth?"pointer":"default",width:28,height:28,padding:0,
+            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:28,fontWeight:400,opacity:canGoPrevGalleryMonth?1:.32}}>‹</button>
+          <div style={{fontSize:24,fontWeight:700,color:"#1A1A2E",letterSpacing:"-.4px",lineHeight:1.2}}>{filterLabel}</div>
           <button className="btn-press" onClick={()=>canGoNextGalleryMonth&&setGalleryFilter(f=>Math.max(0,f-1))} disabled={!canGoNextGalleryMonth} style={{
-            background:"none",border:"none",cursor:canGoNextGalleryMonth?"pointer":"default",width:24,height:24,padding:0,
-            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:24,fontWeight:500,opacity:canGoNextGalleryMonth?1:.32}}>›</button>
+            background:"none",border:"none",cursor:canGoNextGalleryMonth?"pointer":"default",width:28,height:28,padding:0,
+            display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:28,fontWeight:400,opacity:canGoNextGalleryMonth?1:.32}}>›</button>
         </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,padding:"0 2px"}}>
-          <div style={{fontSize:11,color:"#94A3B8",fontWeight:500}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,padding:"0 1px"}}>
+          <div style={{fontSize:14,color:"#94A3B8",fontWeight:500,lineHeight:1.35}}>{filterLabel} 사용 금액 · ₩{totalAmt.toLocaleString()}</div>
           {galleryTxns.length>0&&(
             <button onClick={dlAll} className="btn-press" style={{
-              display:"flex",alignItems:"center",gap:5,padding:"6px 11px",borderRadius:999,
-              background:"rgba(255,255,255,.48)",border:"1px solid rgba(255,255,255,.9)",color:"#6366F1",
-              fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 10px 24px rgba(148,163,184,.10)",backdropFilter:"blur(14px)"}}>
+              display:"flex",alignItems:"center",gap:5,padding:"0 14px",height:32,borderRadius:20,
+              background:"rgba(255,255,255,.36)",border:"1.5px solid #6366F1",color:"#6366F1",
+              fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"none",backdropFilter:"blur(10px)"}}>
               <IcDownload/>전체 다운로드
             </button>
           )}
@@ -927,18 +921,16 @@ export default function App() {
         {galleryTxns.length>0?(
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,paddingBottom:8}}>
             {galleryTxns.map(tx=>(
-              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.50))",borderRadius:22,overflow:"hidden",position:"relative",boxShadow:"0 14px 28px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.82)"}}>
-                <div style={{padding:"10px 10px 0"}}>
-                  <div style={{position:"relative",borderRadius:18,overflow:"hidden",background:"linear-gradient(180deg, rgba(226,236,255,.72), rgba(255,255,255,.34))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.58)"}}>
+              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",borderRadius:16,overflow:"hidden",position:"relative",boxShadow:"0 10px 24px rgba(148,163,184,.10)",border:"1px solid rgba(255,255,255,.84)"}}>
+                <div style={{position:"relative",borderRadius:"16px 16px 0 0",overflow:"hidden"}}>
                     <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
-                      style={{width:"100%",aspectRatio:"0.92",objectFit:"cover",display:"block",cursor:"pointer"}}/>
-                  </div>
+                      style={{width:"100%",height:140,objectFit:"cover",display:"block",cursor:"pointer"}}/>
                 </div>
                 <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
-                  position:"absolute",top:14,right:14,width:26,height:26,borderRadius:10,
-                  background:"rgba(248,250,252,.74)",border:"1px solid rgba(255,255,255,.96)",
-                  color:"#64748B",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",fontWeight:700,letterSpacing:"0",boxShadow:"0 8px 16px rgba(148,163,184,.10)",backdropFilter:"blur(10px)"}}>⋯</button>
+                  position:"absolute",top:8,right:8,width:28,height:28,borderRadius:14,
+                  background:"rgba(255,255,255,.80)",border:"1px solid rgba(255,255,255,.92)",
+                  color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
+                  justifyContent:"center",fontWeight:700,letterSpacing:"0",boxShadow:"0 6px 14px rgba(148,163,184,.10)",backdropFilter:"blur(8px)"}}>⋯</button>
                 <div style={{padding:"12px 12px 14px"}}>
                   <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{tx.merchant}</div>
                   <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:4}}>₩{tx.amount.toLocaleString()}</div>
