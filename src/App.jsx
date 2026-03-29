@@ -260,8 +260,8 @@ const FormInput = ({label,value,onChange,type="text",placeholder}) => (
   <div style={{marginBottom:12}}>
     {label&&<div style={{fontSize:12,color:"#64748B",fontWeight:500,marginBottom:6,textAlign:"left"}}>{label}</div>}
     <input className="inp" type={type} value={value} placeholder={placeholder} onChange={e=>onChange(e.target.value)}
-      style={{width:"100%",background:"rgba(255,255,255,.72)",border:"1px solid rgba(255,255,255,.88)",borderRadius:14,
-        padding:"14px 16px",fontSize:15,color:"#1e1b4b",outline:"none",transition:"border-color .15s, box-shadow .15s",fontFamily:"inherit"}}/>
+      style={{width:"100%",background:"#FFFFFF",border:"1px solid #E2E8F0",borderRadius:10,
+        padding:"13px 14px",fontSize:15,color:"#1e1b4b",outline:"none",transition:"border-color .15s, box-shadow .15s",fontFamily:"inherit",boxShadow:"none"}}/>
   </div>
 );
 
@@ -313,10 +313,10 @@ const FixedConfirmBtn = ({onClick,label="확인"}) => (
     paddingBottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
     background:"linear-gradient(to top,rgba(232,244,253,.96) 50%,rgba(232,244,253,0))"}}>
     <button className="btn-press" onClick={onClick} style={{
-      width:"100%",borderRadius:16,padding:"16px",fontSize:15,fontWeight:700,
+      width:"100%",height:52,borderRadius:14,padding:"0 16px",fontSize:16,fontWeight:700,
       cursor:"pointer",border:"none",color:"#fff",fontFamily:"inherit",
-      background:"linear-gradient(150deg,#8B93FF,#6366F1)",
-      boxShadow:"0 16px 36px rgba(99,102,241,.32)"}}>
+      background:"linear-gradient(90deg,#818CF8,#6366F1)",
+      boxShadow:"0 12px 28px rgba(99,102,241,.28)"}}>
       {label}
     </button>
   </div>
@@ -432,25 +432,53 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
 function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
   const titleMap = {camera:"영수증 촬영", gallery:"사진 업로드", manual:"직접 등록", edit:"내역 수정"};
   const title = titleMap[source] || "입력";
+  const isManualForm = source==="manual" || (source==="edit" && !preview);
+  const showsImageArea = source==="camera" || source==="gallery" || (source==="edit" && !!preview);
+  const headerButtonStyle = isManualForm
+    ? {
+        width:36,height:36,borderRadius:10,background:"rgba(255,255,255,.38)",border:"1px solid rgba(255,255,255,.82)",
+        boxShadow:"0 10px 22px rgba(148,163,184,.12)"
+      }
+    : {
+        width:24,height:24,borderRadius:0,background:"transparent",border:"none",boxShadow:"none"
+      };
+  const formCardStyle = isManualForm
+    ? {
+        margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",
+        borderRadius:16,padding:"20px",boxShadow:"0 12px 30px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.9)"
+      }
+    : {
+        margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.58))",
+        borderRadius:16,padding:"20px",boxShadow:"0 16px 34px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.92)"
+      };
 
   return (
     <div style={{position:"fixed",inset:0,background:"linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
       zIndex:300,maxWidth:430,margin:"0 auto",overflowY:"auto",paddingBottom:100}}>
-      <BackHeader title={title} onBack={onBack}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:`${isManualForm?52:58}px 20px 16px`}}>
+        <button className="btn-press" onClick={onBack} style={{
+          ...headerButtonStyle,
+          display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
+          <svg width={isManualForm?18:22} height={isManualForm?18:22} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <div style={{fontSize:isManualForm?17:18,fontWeight:700,color:"#1A1A2E",lineHeight:1}}>{title}</div>
+      </div>
 
       {/* Photo area */}
-      {(source==="camera"||source==="gallery"||source==="edit")&&(
+      {showsImageArea&&(
         <div style={{margin:"0 20px 16px"}}>
           {preview?(
-            <div style={{width:"100%",borderRadius:20,overflow:"hidden",maxHeight:260,boxShadow:"0 4px 20px rgba(0,0,0,.08)"}}>
-              <img src={preview} alt="" style={{width:"100%",maxHeight:260,objectFit:"cover",display:"block"}}/>
+            <div className="glass-panel" style={{width:"100%",height:200,borderRadius:16,overflow:"hidden",boxShadow:"0 16px 36px rgba(148,163,184,.14)",border:"1.5px solid #E2E8F0"}}>
+              <img src={preview} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </div>
           ):(
-            <div style={{width:"100%",height:180,borderRadius:20,background:"#F8F9FA",
-              border:"1.5px dashed #CBD5E1",display:"flex",flexDirection:"column",
-              alignItems:"center",justifyContent:"center",gap:10}}>
-              <IcCamera color="#CBD5E1" size={36}/>
-              <div style={{fontSize:13,color:"#94A3B8"}}>사진을 촬영하거나 업로드하세요</div>
+            <div className="glass-panel" style={{width:"100%",height:200,borderRadius:16,background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.60))",
+              border:"1.5px solid #E2E8F0",display:"flex",flexDirection:"column",
+              alignItems:"center",justifyContent:"center",gap:12,boxShadow:"0 16px 36px rgba(148,163,184,.14)"}}>
+              <IcCamera color="#94A3B8" size={34}/>
+              <div style={{fontSize:13,color:"#94A3B8",fontWeight:500}}>사진을 촬영하거나 업로드하세요</div>
             </div>
           )}
         </div>
@@ -470,7 +498,7 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
       )}
 
       {/* Form card */}
-      <div className="glass-panel" style={{margin:"0 20px",background:"linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58))",borderRadius:20,padding:"20px",boxShadow:"0 18px 38px rgba(99,102,241,.12)"}}>
+      <div className="glass-panel" style={formCardStyle}>
         <FormInput label="결제 금액"
           value={form.amount ? parseInt(form.amount,10).toLocaleString() : ""}
           onChange={v=>setForm(f=>({...f,amount:v.replace(/[^0-9]/g,"")}))}
