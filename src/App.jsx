@@ -31,6 +31,8 @@ if (!document.querySelector("#css3")) {
     input[type=date]{
       appearance:none;
       -webkit-appearance:none;
+      -moz-appearance:textfield;
+      color-scheme:light;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E");
       background-repeat:no-repeat;
       background-position:right 14px center;
@@ -474,12 +476,12 @@ function FormPage({source, preview, ocrRes, form, setForm, onSubmit, onBack}) {
 
   return (
     <div style={{position:"fixed",inset:0,width:"100vw",minHeight:"100dvh",background:"radial-gradient(circle at top right, rgba(255,255,255,.82), transparent 24%), radial-gradient(circle at bottom left, rgba(199,210,254,.32), transparent 30%), linear-gradient(160deg,#EEF0FF 0%,#E8F0FA 40%,#E8F4FD 100%)",
-      zIndex:300,maxWidth:430,margin:"0 auto",overflowY:"auto",paddingBottom:100,backgroundRepeat:"no-repeat",backgroundAttachment:"fixed"}}>
+      zIndex:300,maxWidth:"none",margin:0,overflowY:"auto",paddingBottom:100,backgroundRepeat:"no-repeat",backgroundAttachment:"fixed"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,padding:`${isManualForm?52:58}px 20px 16px`}}>
         <button className="btn-press" onClick={()=>window.history.back()} style={{
           ...headerButtonStyle,
           display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
-          <svg width={isManualForm?18:22} height={isManualForm?18:22} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
