@@ -734,22 +734,22 @@ export default function App() {
               const group=groupedTxns[dateKey];
               const dayTotal=group.reduce((s,t)=>s+t.amount,0);
               return (
-                <div key={dateKey} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,.52))",borderRadius:20,boxShadow:"0 14px 32px rgba(148,163,184,.12)",marginBottom:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.86)"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"rgba(248,250,252,.72)"}}>
+                <div key={dateKey} style={{marginBottom:8,overflow:"visible"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 8px",background:"#F8FAFC",borderRadius:8,marginBottom:2}}>
                     <span style={{fontSize:13,fontWeight:700,color:"#1A1A2E"}}>{formatDateHeader(dateKey)}</span>
                     <span style={{fontSize:13,color:"#EF4444"}}>₩{dayTotal.toLocaleString()}</span>
                   </div>
-                  <div style={{padding:"0 16px"}}>
+                  <div style={{padding:"0 8px"}}>
                     {group.map((tx,i)=>(
                       <div key={tx.id} className="tx-row fu" onClick={()=>openEdit(tx)} style={{
-                        display:"flex",alignItems:"center",gap:10,padding:"13px 0",
-                        borderBottom:i<group.length-1?"1px solid #F8F8FF":"none",cursor:"pointer",borderRadius:4}}>
+                        display:"flex",alignItems:"center",gap:8,minHeight:48,padding:"0 0",
+                        borderBottom:i<group.length-1?"1px solid #F1F5F9":"none",cursor:"pointer",borderRadius:0}}>
                         <div style={{flex:1,minWidth:0,textAlign:"left"}}>
-                          <div style={{fontSize:14,fontWeight:500,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
+                          <div style={{fontSize:14,fontWeight:400,color:"#1A1A2E",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tx.merchant}</div>
                         </div>
-                        <div style={{fontSize:14,fontWeight:600,color:"#1e1b4b",flexShrink:0}}>₩{tx.amount.toLocaleString()}</div>
+                        <div style={{fontSize:14,fontWeight:400,color:"#1A1A2E",flexShrink:0,textAlign:"right"}}>₩{tx.amount.toLocaleString()}</div>
                         <button onClick={e=>{e.stopPropagation();delTxn(tx.id);}} style={{
-                          background:"none",border:"none",cursor:"pointer",color:"#CBD5E1",fontSize:18,lineHeight:1,padding:"2px 4px",flexShrink:0}}>×</button>
+                          background:"none",border:"none",cursor:"pointer",color:"#CBD5E1",fontSize:16,lineHeight:1,padding:"0 0 0 8px",flexShrink:0}}>×</button>
                       </div>
                     ))}
                   </div>
