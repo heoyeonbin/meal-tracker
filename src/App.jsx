@@ -438,33 +438,35 @@ function CalendarDaySheet({dateKey, txns, recs, onClose, onEdit}) {
     <>
       <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(26,26,46,.38)",zIndex:200,backdropFilter:"blur(8px)"}}/>
       <div className="glass-panel" style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",
-        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(255,255,255,.76), rgba(243,247,255,.60))",zIndex:201,
-        borderRadius:"28px 28px 0 0",padding:"12px 20px 20px",
-        paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))",
-        animation:"slideUp .25s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -12px 34px rgba(148,163,184,.16)"}}>
-        <div style={{width:40,height:5,borderRadius:99,background:"rgba(148,163,184,.38)",margin:"0 auto 18px"}}/>
-        <div style={{fontSize:17,fontWeight:700,color:"#1e1b4b",marginBottom:10}}>{formatDateHeader(dateKey)}</div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:18,paddingBottom:14,borderBottom:"1px solid rgba(226,232,240,.72)"}}>
+        width:"100%",maxWidth:430,background:"linear-gradient(180deg, rgba(252,253,255,.88), rgba(238,244,255,.72))",zIndex:201,
+        borderRadius:"32px 32px 0 0",padding:"14px 24px 22px",
+        paddingBottom:"calc(22px + env(safe-area-inset-bottom, 0px))",
+        animation:"slideUp .28s cubic-bezier(.22,1,.36,1)",boxShadow:"0 -18px 42px rgba(148,163,184,.18)",
+        border:"1px solid rgba(255,255,255,.92)",backdropFilter:"blur(24px)"}}>
+        <div style={{width:44,height:5,borderRadius:99,background:"rgba(148,163,184,.34)",margin:"0 auto 22px"}}/>
+        <div style={{fontSize:16,fontWeight:600,color:"#64748B",marginBottom:6}}>{formatDateHeader(dateKey)}</div>
+        <div style={{fontSize:28,fontWeight:800,color:"#1A1A2E",letterSpacing:"-.8px",marginBottom:18}}>₩{total.toLocaleString()}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <span style={{fontSize:13,color:"#94A3B8",fontWeight:600}}>사용 내역</span>
           <span style={{fontSize:13,color:"#94A3B8"}}>{dayTxns.length}건</span>
-          <span style={{fontSize:16,fontWeight:700,color:"#6366F1"}}>₩{total.toLocaleString()}</span>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:20}}>
+        <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:22,background:"rgba(255,255,255,.42)",borderRadius:20,padding:"0 2px",border:"1px solid rgba(255,255,255,.74)"}}>
           {dayTxns.map((tx,i)=>(
             <button key={tx.id} onClick={()=>{onEdit(tx);onClose();}}
               style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"15px 0",borderBottom:i<dayTxns.length-1?"1px solid rgba(241,245,249,.9)":"none",
+                padding:"16px 14px",borderBottom:i<dayTxns.length-1?"1px solid rgba(226,232,240,.78)":"none",
                 background:"none",border:"none",cursor:"pointer",width:"100%",fontFamily:"inherit",
                 borderRadius:0}}>
-              <span style={{fontSize:14,fontWeight:500,color:"#1e1b4b"}}>{tx.merchant}</span>
-              <span style={{fontSize:14,fontWeight:600,color:"#334155"}}>₩{tx.amount.toLocaleString()}</span>
+              <span style={{fontSize:15,fontWeight:600,color:"#1e1b4b"}}>{tx.merchant}</span>
+              <span style={{fontSize:14,fontWeight:700,color:"#475569"}}>₩{tx.amount.toLocaleString()}</span>
             </button>
           ))}
         </div>
         <button className="btn-press" onClick={onClose} style={{
-          width:"100%",padding:"15px",borderRadius:18,border:"1px solid rgba(255,255,255,.88)",cursor:"pointer",
+          width:"100%",padding:"16px",borderRadius:18,border:"1px solid rgba(255,255,255,.88)",cursor:"pointer",
           background:"linear-gradient(150deg,#8B93FF,#6366F1)",color:"#fff",
           fontSize:15,fontWeight:700,fontFamily:"inherit",
-          boxShadow:"0 14px 28px rgba(99,102,241,.22)"}}>
+          boxShadow:"0 16px 28px rgba(99,102,241,.22)"}}>
           확인
         </button>
       </div>
@@ -810,7 +812,7 @@ export default function App() {
         <div style={{padding:"52px 20px 0"}}>
           {/* Hero Card */}
           <div className="glass-panel" style={{background:"linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58))",borderRadius:24,padding:"22px",boxShadow:"0 18px 40px rgba(99,102,241,.12)",marginBottom:14}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"stretch",justifyContent:"space-between",gap:16}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:12,color:"#94A3B8",marginBottom:4,fontWeight:500}}>이번 달 잔액</div>
                 <div style={{fontSize:36,fontWeight:900,letterSpacing:"-1.5px",color:"#1e1b4b",lineHeight:1.1,marginBottom:6}}>
@@ -825,7 +827,15 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <CardSVG size={80}/>
+              <div style={{width:108,flexShrink:0,borderRadius:24,padding:"14px 10px 10px",display:"flex",alignItems:"center",justifyContent:"center",
+                background:"linear-gradient(180deg, rgba(255,255,255,.92), rgba(226,236,255,.68))",
+                border:"1px solid rgba(255,255,255,.94)",boxShadow:"inset 0 1px 0 rgba(255,255,255,.68), 0 14px 28px rgba(148,163,184,.14)",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:-18,right:-10,width:78,height:78,borderRadius:"50%",background:"rgba(129,140,248,.16)",filter:"blur(8px)"}}/>
+                <div style={{position:"absolute",bottom:-20,left:-12,width:84,height:84,borderRadius:"50%",background:"rgba(191,219,254,.28)",filter:"blur(10px)"}}/>
+                <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:"100%",height:"100%"}}>
+                  <CardSVG size={84}/>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -928,15 +938,19 @@ export default function App() {
         {galleryTxns.length>0?(
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,paddingBottom:8}}>
             {galleryTxns.map(tx=>(
-              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.50))",borderRadius:20,overflow:"hidden",position:"relative",boxShadow:"0 14px 28px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.82)"}}>
-                <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
-                  style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",cursor:"pointer"}}/>
+              <div key={tx.id} className="glass-soft" style={{background:"linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.50))",borderRadius:22,overflow:"hidden",position:"relative",boxShadow:"0 14px 28px rgba(148,163,184,.12)",border:"1px solid rgba(255,255,255,.82)"}}>
+                <div style={{padding:"10px 10px 0"}}>
+                  <div style={{position:"relative",borderRadius:18,overflow:"hidden",background:"linear-gradient(180deg, rgba(226,236,255,.72), rgba(255,255,255,.34))",boxShadow:"inset 0 1px 0 rgba(255,255,255,.58)"}}>
+                    <img src={recs[tx.id]} alt="" onClick={()=>dlRec(tx.id)}
+                      style={{width:"100%",aspectRatio:"0.92",objectFit:"cover",display:"block",cursor:"pointer"}}/>
+                  </div>
+                </div>
                 <button onClick={e=>{e.stopPropagation();setGalleryBS(tx);}} style={{
                   position:"absolute",top:10,right:10,width:30,height:30,borderRadius:"50%",
                   background:"rgba(255,255,255,.72)",border:"1px solid rgba(255,255,255,.92)",
                   color:"#64748B",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
                   justifyContent:"center",fontWeight:700,letterSpacing:"1px",boxShadow:"0 10px 18px rgba(148,163,184,.12)",backdropFilter:"blur(12px)"}}>···</button>
-                <div style={{padding:"12px 12px 13px"}}>
+                <div style={{padding:"12px 12px 14px"}}>
                   <div style={{fontSize:13,fontWeight:600,color:"#1e1b4b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{tx.merchant}</div>
                   <div style={{fontSize:12,color:"#6366F1",fontWeight:700,marginTop:4}}>₩{tx.amount.toLocaleString()}</div>
                   <div style={{fontSize:11,color:"#94A3B8",marginTop:3}}>{formatStoredDate(tx.date,currentServerMonthDate)}</div>
